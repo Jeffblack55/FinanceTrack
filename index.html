@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="Referrer-Policy" content="no-referrer">
+  <!-- Blindagem de Segurança Avançada contra CSP Injection e exfiltração de dados -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>FinanceTrack - Controle Pessoal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Roboto Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .mono { font-family: 'Roboto Mono', monospace; }
+    table input, table select { background: transparent; width: 100%; border: none; outline: none; font-size: 11px; }
+    table input:focus, table select:focus { background-color: rgba(59, 130, 246, 0.12); }
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col text-xs transition-colors duration-200 antialiased overflow-x-hidden">
+
+  <!-- TELA DE ATIVAÇÃO POR E-MAIL -->
+  <div id="telaAtivacao" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 text-left">
+      <div class="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-md">FT</div>
+        <div>
+          <h2 class="font-bold text-base text-slate-900 dark:text-slate-100">Ativação do FinanceTrack</h2>
+          <p class="text-slate-500 dark:text-slate-400 text-xs">Insira seu e-mail e chave de licença autorizada</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">E-mail Cadastrado:</label>
+          <input type="email" id="inputEmailAtivacao" placeholder="seu-email@exemplo.com" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-500 text-slate-800 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">Chave de Ativação:</label>
+          <input type="text" id="inputChaveAtivacao" placeholder="FT-XXXX-XXXX-XXXX" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none mono uppercase focus:border-emerald-500 text-slate-800 dark:text-slate-100">
+        </div>
+        <div id="erroAtivacao" class="text-rose-600 dark:text-rose-400 text-[11px] hidden font-medium"></div>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" onclick="processarAtivacao()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-md">Ativar Aplicativo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CABEÇALHO -->
+  <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm w-full">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-white text-xs shadow-sm">FT</div>
+        <div>
+          <h1 class="font-bold text-sm text-slate-900 dark:text-slate-100 leading-none">FinanceTrack</h1>
+          <span class="text-[10px] text-slate-500 dark:text-slate-400" data-i18n="subtituloHeader">Controle Pessoal</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Seletor de Ano Fiscal -->
+        <div class="relative">
+          <div class="flex items-center bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-1 py-0.5">
+            <button type="button" onclick="mudarAno(-1)" class="px-1.5 py-0.5 text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold">&lsaquo;</button>
+            <select id="seletorAnoFiscal" onchange="selecionarAno(this.value)" class="bg-transparent text-slate-800 dark:text-slate-200 font-bold px-1.5 py-0.5 outline-none cursor-pointer text-xs font-mono"></select>
+            <button type="button" onclick="mudarAno(1)" class="px-1.5 py-0.5 text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold">&rsaquo;</button>
+            <button type="button" onclick="togglePainelAdicionar('ano')" class="ml-1 px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded text-[10px] text-slate-700 dark:text-slate-300 font-semibold" title="Adicionar Ano Fiscal">+</button>
+          </div>
+          <!-- Painel Expansível: Adicionar Ano -->
+          <div id="painelAddAno" class="hidden absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xl z-40 space-y-2">
+            <span class="font-bold text-[11px] text-slate-800 dark:text-slate-200 block" data-i18n="novoAnoFiscal">Novo Ano Fiscal</span>
+            <input type="number" id="inputNovoAno" min="2000" max="2100" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+            <div class="flex gap-1.5 justify-end pt-1">
+              <button type="button" onclick="togglePainelAdicionar('ano', false)" class="px-2 py-0.5 text-[10px] rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" data-i18n="cancelar">Cancelar</button>
+              <button type="button" onclick="confirmarAdicionarAno()" class="px-2 py-0.5 text-[10px] rounded bg-emerald-600 text-white font-semibold hover:bg-emerald-500" data-i18n="salvar">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" onclick="salvarTudoComAviso()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3.5 py-1.5 rounded-lg text-xs transition shadow-sm" data-i18n="btnSalvar">Salvar</button>
+        
+        <!-- Engrenagem (Configurações) -->
+        <button type="button" onclick="abrirModalConfig()" class="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition" title="Configurações">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ABAS CENTRALIZADAS -->
+  <nav class="bg-white/80 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 select-none w-full">
+    <div class="max-w-7xl mx-auto px-4 flex items-center gap-1 overflow-x-auto text-xs py-0.5">
+      <button type="button" onclick="selecionarAba('MENU')" id="tab-MENU" class="tab-btn px-4 py-2 font-semibold border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 whitespace-nowrap">MENU</button>
+      <div class="h-4 w-px bg-slate-300 dark:bg-slate-800 my-auto mx-1 flex-shrink-0"></div>
+      <div id="containerAbasMeses" class="flex gap-1 flex-nowrap"></div>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL CENTRALIZADO -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 space-y-4">
+
+    <!-- ======================= ABA MENU ======================= -->
+    <div id="view-MENU" class="space-y-4">
+      
+      <!-- 1. CONTAS BANCÁRIAS E COOPERATIVAS -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
+          <div>
+            <h2 class="font-bold text-sm text-emerald-600 dark:text-emerald-400" data-i18n="contasTitulo">Contas Bancárias & Cooperativas</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-[11px]" data-i18n="contasSub">Gerenciamento de contas correntes, salários e poupanças</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2">
+              <span class="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-semibold" data-i18n="saldoConsolidado">Saldo Consolidado:</span>
+              <span id="totalContasBancarias" class="font-bold text-emerald-600 dark:text-emerald-400 mono text-sm">0,00</span>
+            </div>
+            <div class="relative">
+              <button type="button" onclick="togglePainelAdicionar('conta')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3.5 py-1.5 rounded-lg text-xs transition shadow-sm" data-i18n="btnAdicionarConta">+ Adicionar Conta</button>
+              <!-- Painel Expansível Conta -->
+              <div id="painelAddConta" class="hidden absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-2xl z-40 space-y-3 text-left">
+                <span class="font-bold text-xs text-slate-800 dark:text-slate-200 block border-b border-slate-200 dark:border-slate-800 pb-1.5" data-i18n="novaContaBancaria">Nova Conta Bancária</span>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="bancoInstituicao">Banco / Instituição:</label>
+                  <select id="novoBancoConta" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+                    <option value="Nubank">Nubank</option>
+                    <option value="Cresol">Cresol</option>
+                    <option value="Sicredi">Sicredi</option>
+                    <option value="Sicoob">Sicoob</option>
+                    <option value="Itaú">Itaú</option>
+                    <option value="Bradesco">Bradesco</option>
+                    <option value="Banco do Brasil">Banco do Brasil</option>
+                    <option value="Caixa">Caixa</option>
+                    <option value="Santander">Santander</option>
+                    <option value="Inter">Inter</option>
+                    <option value="BTG Pactual">BTG Pactual</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="tipoConta">Tipo de Conta:</label>
+                  <select id="novoTipoConta" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+                    <option value="Conta Corrente" data-i18n="contaCorrente">Conta Corrente</option>
+                    <option value="Conta Salário" data-i18n="contaSalario">Conta Salário</option>
+                    <option value="Conta Poupança" data-i18n="contaPoupanca">Conta Poupança</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="saldoInicialLabel">Saldo Inicial:</label>
+                  <input type="number" step="0.01" id="novoSaldoConta" value="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none mono text-right text-slate-800 dark:text-slate-100">
+                </div>
+                <div class="flex gap-2 justify-end pt-1">
+                  <button type="button" onclick="togglePainelAdicionar('conta', false)" class="px-2.5 py-1 text-xs rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" data-i18n="cancelar">Cancelar</button>
+                  <button type="button" onclick="confirmarAdicionarConta()" class="px-3 py-1 text-xs rounded bg-emerald-600 text-white font-semibold hover:bg-emerald-500" data-i18n="salvarConta">Salvar Conta</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="listaContasBancarias" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- 2. CONFIGURAÇÃO DE ÁREAS E CARTÕES -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- ÁREAS DE SAÍDA -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm relative">
+          <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+            <h3 class="font-bold text-rose-600 dark:text-rose-400 uppercase text-[10px] tracking-wider" data-i18n="areasSaidas">Áreas de Saída (Despesas)</h3>
+            <button type="button" onclick="togglePainelAdicionar('saida')" class="text-rose-600 dark:text-rose-400 hover:underline text-[10px] font-semibold" data-i18n="btnAdicionarArea">+ Adicionar</button>
+          </div>
+          <div id="painelAddSaida" class="hidden absolute left-3 right-3 top-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xl z-40 space-y-2">
+            <span class="font-bold text-[11px] text-slate-800 dark:text-slate-200 block" data-i18n="novaCategoriaGasto">Nova Categoria de Gasto</span>
+            <input type="text" id="novoNomeSaida" placeholder="Ex: Pet / Viagem" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+            <div class="flex gap-1.5 justify-end pt-1">
+              <button type="button" onclick="togglePainelAdicionar('saida', false)" class="px-2 py-0.5 text-[10px] rounded text-slate-500" data-i18n="cancelar">Cancelar</button>
+              <button type="button" onclick="confirmarAdicionarArea('saidas')" class="px-2.5 py-0.5 text-[10px] rounded bg-rose-600 text-white font-semibold" data-i18n="salvar">Salvar</button>
+            </div>
+          </div>
+          <div id="listaSaidasMenu" class="space-y-1.5 max-h-[360px] overflow-y-auto"></div>
+        </div>
+
+        <!-- ÁREAS DE ENTRADA -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm relative">
+          <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+            <h3 class="font-bold text-emerald-600 dark:text-emerald-400 uppercase text-[10px] tracking-wider" data-i18n="areasEntradas">Áreas de Entrada (Rendas)</h3>
+            <button type="button" onclick="togglePainelAdicionar('entrada')" class="text-emerald-600 dark:text-emerald-400 hover:underline text-[10px] font-semibold" data-i18n="btnAdicionarArea">+ Adicionar</button>
+          </div>
+          <div id="painelAddEntrada" class="hidden absolute left-3 right-3 top-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xl z-40 space-y-2">
+            <span class="font-bold text-[11px] text-slate-800 dark:text-slate-200 block" data-i18n="novaCategoriaRenda">Nova Categoria de Renda</span>
+            <input type="text" id="novoNomeEntrada" placeholder="Ex: Aluguel / Freelance" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+            <div class="flex gap-1.5 justify-end pt-1">
+              <button type="button" onclick="togglePainelAdicionar('entrada', false)" class="px-2 py-0.5 text-[10px] rounded text-slate-500" data-i18n="cancelar">Cancelar</button>
+              <button type="button" onclick="confirmarAdicionarArea('entradas')" class="px-2.5 py-0.5 text-[10px] rounded bg-emerald-600 text-white font-semibold" data-i18n="salvar">Salvar</button>
+            </div>
+          </div>
+          <div id="listaEntradasMenu" class="space-y-1.5 max-h-[360px] overflow-y-auto"></div>
+        </div>
+
+        <!-- CARTÕES DE CRÉDITO -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm relative">
+          <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+            <h3 class="font-bold text-amber-600 dark:text-amber-400 uppercase text-[10px] tracking-wider" data-i18n="cartoesCredito">Cartões de Crédito</h3>
+            <button type="button" onclick="togglePainelAdicionar('cartao')" class="text-amber-600 dark:text-amber-400 hover:underline text-[10px] font-semibold" data-i18n="btnAdicionarCartao">+ Adicionar Cartão</button>
+          </div>
+          <div id="painelAddCartao" class="hidden absolute left-3 right-3 top-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xl z-40 space-y-2.5">
+            <span class="font-bold text-[11px] text-slate-800 dark:text-slate-200 block" data-i18n="novoCartaoCredito">Novo Cartão de Crédito</span>
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="banco">Banco:</label>
+              <select id="novoBancoCartao" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+                <option value="Nubank">Nubank</option>
+                <option value="Inter">Inter</option>
+                <option value="Itaú">Itaú</option>
+                <option value="Bradesco">Bradesco</option>
+                <option value="Santander">Santander</option>
+                <option value="Cresol">Cresol</option>
+                <option value="Sicredi">Sicredi</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="nomeCartao">Nome do Cartão:</label>
+              <input type="text" id="novoNomeCartao" placeholder="Ex: Cartão Black" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="limiteCartao">Limite do Cartão:</label>
+              <input type="number" step="0.01" id="novoLimiteCartao" placeholder="2000.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none mono text-slate-800 dark:text-slate-100">
+            </div>
+            <div class="flex gap-1.5 justify-end pt-1">
+              <button type="button" onclick="togglePainelAdicionar('cartao', false)" class="px-2 py-0.5 text-[10px] rounded text-slate-500" data-i18n="cancelar">Cancelar</button>
+              <button type="button" onclick="confirmarAdicionarCartao()" class="px-2.5 py-0.5 text-[10px] rounded bg-amber-600 text-white font-semibold" data-i18n="salvarCartao">Salvar Cartão</button>
+            </div>
+          </div>
+          <div id="listaCartoesMenu" class="space-y-2 max-h-[360px] overflow-y-auto"></div>
+        </div>
+      </div>
+
+      <!-- 3. RESUMO ANUAL (SALDO POR MÊS) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-3">
+          <div>
+            <h3 class="font-bold text-blue-600 dark:text-blue-400 uppercase text-[11px] tracking-wider" data-i18n="resumoAno">Resumo do Ano Fiscal (Saldos por Mês)</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5" data-i18n="resumoAnoSub">Visão consolidada mês a mês dos saldos finais</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <span class="text-[9px] uppercase text-slate-400 block font-semibold" data-i18n="totalEconomizado">Total Economizado</span>
+              <span id="resumoEconomiaAno" class="mono font-bold text-xs text-emerald-600 dark:text-emerald-400">0,00</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] uppercase text-slate-400 block font-semibold" data-i18n="totalGasto">Total Gasto</span>
+              <span id="resumoGastoAno" class="mono font-bold text-xs text-rose-600 dark:text-rose-400">0,00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2" id="resumoMesesMenu"></div>
+
+        <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
+            <div>
+              <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-wider" data-i18n="proporcaoAnual">Proporção Anual: Gastos vs Economia</h4>
+              <p class="text-[10px] text-slate-400" data-i18n="proporcaoAnualSub">Comparativo do total gasto no ano contra o valor líquido economizado</p>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-center relative min-h-[260px]">
+            <div class="relative w-full max-w-[280px] h-[240px]">
+              <canvas id="graficoPizzaMenu"></canvas>
+              <div id="graficoPizzaVazioMsg" class="hidden absolute inset-0 flex items-center justify-center text-slate-400 text-xs text-center px-4" data-i18n="nenhumDadoAno">
+                Nenhum dado financeiro registrado neste ano fiscal
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================= ABA DO MÊS SELECIONADO ======================= -->
+    <div id="view-MES" class="hidden space-y-4">
+      
+      <!-- INDICADORES DO TOPO -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+          <span class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-xs" id="tituloMesAtual">JANEIRO 2026</span>
+          <div class="flex items-center gap-2">
+            <span class="text-slate-500 dark:text-slate-400" data-i18n="saldoInicial">Saldo Inicial:</span>
+            <input type="number" id="inputSaldoInicial" onchange="atualizarCalculosMes()" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 px-2 py-0.5 rounded-lg text-right w-28 text-slate-800 dark:text-white mono font-semibold" value="0">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-center">
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="saidaTotal">Saída Total</span>
+            <span id="cardSaida" class="font-bold text-rose-600 dark:text-rose-400 mono">0,00</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="entradaTotal">Entrada Total</span>
+            <span id="cardEntrada" class="font-bold text-emerald-600 dark:text-emerald-400 mono">0,00</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="lucroMes">Lucro do Mês</span>
+            <span id="cardLucro" class="font-bold text-slate-800 dark:text-slate-100 mono">0,00</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="crescimento">% Crescimento</span>
+            <span id="cardCrescimento" class="font-bold text-slate-600 dark:text-slate-300 mono">0,00%</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="saldoFinal">Saldo Atual/Final</span>
+            <span id="cardSaldoFinal" class="font-bold text-blue-600 dark:text-blue-400 mono">0,00</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="faturaCartoes">Fatura Cartões</span>
+            <span id="cardAPagar" class="font-bold text-amber-600 dark:text-amber-400 mono">0,00</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="aReceber">A Receber</span>
+            <span id="cardAReceber" class="font-bold text-teal-600 dark:text-teal-400 mono">0,00</span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span class="text-[9px] uppercase text-slate-500 dark:text-slate-400 font-semibold block" data-i18n="previsaoLiquida">Previsão Líquida</span>
+            <span id="cardPrevisao" class="font-bold text-purple-600 dark:text-purple-400 mono">0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AS 3 TABELAS PRINCIPAIS -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <!-- TABELA 1: GASTOS -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col shadow-sm overflow-hidden">
+          <div class="bg-rose-50 dark:bg-rose-950/40 border-b border-rose-200 dark:border-rose-900/40 p-2.5 flex justify-between items-center">
+            <span class="font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider text-[11px]" data-i18n="cabGastos">Gastos (Fixos / Variáveis)</span>
+            <button type="button" onclick="adicionarLinha('gastos')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 rounded text-[10px] font-medium" data-i18n="btnNovaLinha">+ Linha</button>
+          </div>
+          <div class="overflow-x-auto flex-1 max-h-[460px]">
+            <table class="w-full border-collapse">
+              <thead class="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-[10px] uppercase border-b border-slate-200 dark:border-slate-800 sticky top-0">
+                <tr>
+                  <th class="p-1.5 w-16 text-left" data-i18n="colData">Data</th>
+                  <th class="p-1.5 w-32 text-left" data-i18n="colArea">Área</th>
+                  <th class="p-1.5 text-left" data-i18n="colBeneficiario">Beneficiário</th>
+                  <th class="p-1.5 text-left" data-i18n="colDescricao">Descrição</th>
+                  <th class="p-1.5 w-24 text-right" data-i18n="colValor">Valor</th>
+                  <th class="p-1.5 w-6"></th>
+                </tr>
+              </thead>
+              <tbody id="corpoGastos" class="divide-y divide-slate-100 dark:divide-slate-800/50"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TABELA 2: RENDAS -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col shadow-sm overflow-hidden">
+          <div class="bg-emerald-50 dark:bg-emerald-950/40 border-b border-emerald-200 dark:border-emerald-900/40 p-2.5 flex justify-between items-center">
+            <span class="font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider text-[11px]" data-i18n="cabRendas">Rendas (Fixas / Variáveis)</span>
+            <button type="button" onclick="adicionarLinha('rendas')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-0.5 rounded text-[10px] font-medium" data-i18n="btnNovaLinha">+ Linha</button>
+          </div>
+          <div class="overflow-x-auto flex-1 max-h-[460px]">
+            <table class="w-full border-collapse">
+              <thead class="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-[10px] uppercase border-b border-slate-200 dark:border-slate-800 sticky top-0">
+                <tr>
+                  <th class="p-1.5 w-16 text-left" data-i18n="colData">Data</th>
+                  <th class="p-1.5 w-28 text-left" data-i18n="colArea">Área</th>
+                  <th class="p-1.5 text-left" data-i18n="colPagador">Pagador</th>
+                  <th class="p-1.5 text-left" data-i18n="colDescricao">Descrição</th>
+                  <th class="p-1.5 w-24 text-right" data-i18n="colValor">Valor</th>
+                  <th class="p-1.5 w-6"></th>
+                </tr>
+              </thead>
+              <tbody id="corpoRendas" class="divide-y divide-slate-100 dark:divide-slate-800/50"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TABELA 3: COMPRAS NO CARTÃO DE CRÉDITO -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col shadow-sm overflow-hidden">
+          <div class="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/40 p-2.5 flex justify-between items-center">
+            <span class="font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider text-[11px]" data-i18n="cabCartoes">Gastos em Cartões</span>
+            <button type="button" onclick="adicionarLinha('cartoes')" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-medium" data-i18n="btnNovaLinha">+ Linha</button>
+          </div>
+          <div class="overflow-x-auto flex-1 max-h-[460px]">
+            <table class="w-full border-collapse">
+              <thead class="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-[10px] uppercase border-b border-slate-200 dark:border-slate-800 sticky top-0">
+                <tr>
+                  <th class="p-1.5 w-16 text-left" data-i18n="colData">Data</th>
+                  <th class="p-1.5 text-left" data-i18n="colBeneficiario">Beneficiário</th>
+                  <th class="p-1.5 w-28 text-left" data-i18n="colCartao">Cartão</th>
+                  <th class="p-1.5 w-28 text-left" data-i18n="colArea">Área</th>
+                  <th class="p-1.5 text-left" data-i18n="colDescricao">Descrição</th>
+                  <th class="p-1.5 w-24 text-right" data-i18n="colValor">Valor</th>
+                  <th class="p-1.5 w-6"></th>
+                </tr>
+              </thead>
+              <tbody id="corpoCartoes" class="divide-y divide-slate-100 dark:divide-slate-800/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAINEL INFERIOR -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+            <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-wider" data-i18n="gastosCategoriaMes">Gastos por Categoria do Mês</h4>
+            <span class="text-[10px] text-slate-400" data-i18n="subDespesasCartoes">Despesas + Cartões</span>
+          </div>
+          <div class="flex-1 flex items-center justify-center relative min-h-[220px]">
+            <canvas id="graficoSetoresMes"></canvas>
+            <div id="graficoVazioMsg" class="hidden absolute text-slate-400 text-center text-xs" data-i18n="semGastosMes">Nenhum gasto registrado neste mês</div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+            <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-wider" data-i18n="consumoLimite">Consumo de Limite por Cartão</h4>
+            <span class="text-[10px] text-slate-400" data-i18n="subFaturaAtual">Fatura Atual</span>
+          </div>
+          <div id="painelFaturasCartoes" class="space-y-3 overflow-y-auto max-h-[220px] flex-1"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL DE CONFIGURAÇÕES -->
+  <div id="modalConfig" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-3">
+        <div class="flex gap-1.5 flex-wrap">
+          <button type="button" onclick="alternarAbaConfig('tema')" id="btnAbaTema" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 text-white transition" data-i18n="tabTema">Tema</button>
+          <button type="button" onclick="alternarAbaConfig('idioma')" id="btnAbaIdioma" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabIdioma">Idioma</button>
+          <button type="button" onclick="alternarAbaConfig('dados')" id="btnAbaDados" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabDados">Dados</button>
+          <button type="button" onclick="alternarAbaConfig('licenca')" id="btnAbaLicenca" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabLicenca">Licença</button>
+        </div>
+        <button type="button" onclick="fecharModalConfig()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white text-lg font-bold leading-none">&times;</button>
+      </div>
+
+      <!-- ABA TEMA -->
+      <div id="painelConfigTema" class="space-y-2">
+        <label class="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+          <span class="font-medium text-slate-800 dark:text-slate-200" data-i18n="modoClaro">Modo Claro</span>
+          <input type="radio" name="opcaoTema" value="light" onchange="aplicarTema('light')" class="text-emerald-600">
+        </label>
+        <label class="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+          <span class="font-medium text-slate-800 dark:text-slate-200" data-i18n="modoEscuro">Modo Escuro</span>
+          <input type="radio" name="opcaoTema" value="dark" onchange="aplicarTema('dark')" class="text-emerald-600">
+        </label>
+        <label class="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+          <span class="font-medium text-slate-800 dark:text-slate-200" data-i18n="modoSistema">De acordo com o Sistema</span>
+          <input type="radio" name="opcaoTema" value="system" onchange="aplicarTema('system')" class="text-emerald-600">
+        </label>
+      </div>
+
+      <!-- ABA IDIOMA E MOEDA -->
+      <div id="painelConfigIdioma" class="space-y-3 hidden">
+        <div class="space-y-1">
+          <label class="text-[10px] font-semibold text-slate-400 block" data-i18n="selecionarIdioma">Idioma:</label>
+          <select id="selectIdioma" onchange="aplicarIdioma(this.value)" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs outline-none text-slate-800 dark:text-slate-100">
+            <option value="pt-BR">Português (Brasil) - R$</option>
+            <option value="es-ES">Español (España) - €</option>
+            <option value="en-US">English (United States) - $</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ABA DADOS (BACKUP) -->
+      <div id="painelConfigDados" class="space-y-3 hidden">
+        <p class="text-slate-500 text-[11px]" data-i18n="backupDesc">Faça o backup de seus dados ou restaure um arquivo de salvamento anterior.</p>
+        <button type="button" onclick="exportarBackup()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-xl text-xs transition" data-i18n="btnExportar">Exportar Backup (.json)</button>
+        <label class="block w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-center font-semibold py-2 rounded-xl text-xs transition cursor-pointer">
+          <span data-i18n="btnImportar">Importar Backup</span>
+          <input type="file" accept=".json" onchange="importarBackup(event)" class="hidden">
+        </label>
+      </div>
+
+      <!-- ABA LICENÇA -->
+      <div id="painelConfigLicenca" class="space-y-3 hidden">
+        <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] uppercase font-semibold text-slate-400" data-i18n="statusLicenca">Status da Licença</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]" data-i18n="ativada">Ativada</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 block" data-i18n="emailLicenciado">E-mail Licenciado:</span>
+            <span id="lblEmailLicenca" class="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">usuario@email.com</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 block" data-i18n="chaveAtiva">Chave Ativa:</span>
+            <span id="lblChaveLicenca" class="font-mono text-[11px] text-slate-600 dark:text-slate-400">FT-XXXX-XXXX</span>
+          </div>
+        </div>
+        <button type="button" onclick="desativarLicenca()" class="w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-600 dark:text-rose-400 font-semibold py-1.5 rounded-xl text-xs transition border border-rose-600/30" data-i18n="btnDesativar">Desativar / Trocar Licença</button>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+        <button type="button" onclick="fecharModalConfig()" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-4 py-1.5 rounded-lg text-xs transition" data-i18n="fechar">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT PRINCIPAL -->
+  <script>
+    const I18N = {
+      'pt-BR': {
+        subtituloHeader: 'Controle Pessoal',
+        btnSalvar: 'Salvar',
+        btnAdicionarConta: '+ Adicionar Conta',
+        btnAdicionarArea: '+ Adicionar',
+        btnAdicionarCartao: '+ Adicionar Cartão',
+        btnNovaLinha: '+ Linha',
+        fechar: 'Fechar',
+        dadosSalvos: 'Dados salvos com sucesso!',
+        tabTema: 'Tema',
+        tabIdioma: 'Idioma/Moeda',
+        tabDados: 'Dados',
+        tabLicenca: 'Licença',
+        modoClaro: 'Modo Claro',
+        modoEscuro: 'Modo Escuro',
+        modoSistema: 'De acordo com o Sistema',
+        selecionarIdioma: 'Idioma & Moeda:',
+        contasTitulo: 'Contas Bancárias & Cooperativas',
+        contasSub: 'Gerenciamento de contas correntes, salários e poupanças',
+        saldoConsolidado: 'Saldo Consolidado:',
+        novaContaBancaria: 'Nova Conta Bancária',
+        bancoInstituicao: 'Banco / Instituição:',
+        tipoConta: 'Tipo de Conta:',
+        contaCorrente: 'Conta Corrente',
+        contaSalario: 'Conta Salário',
+        contaPoupanca: 'Conta Poupança',
+        saldoInicialLabel: 'Saldo Inicial:',
+        cancelar: 'Cancelar',
+        salvar: 'Salvar',
+        salvarConta: 'Salvar Conta',
+        areasSaidas: 'Áreas de Saída (Despesas)',
+        novaCategoriaGasto: 'Nova Categoria de Gasto',
+        areasEntradas: 'Áreas de Entrada (Rendas)',
+        novaCategoriaRenda: 'Nova Categoria de Renda',
+        cartoesCredito: 'Cartões de Crédito',
+        novoCartaoCredito: 'Novo Cartão de Crédito',
+        banco: 'Banco:',
+        nomeCartao: 'Nome do Cartão:',
+        limiteCartao: 'Limite do Cartão:',
+        salvarCartao: 'Salvar Cartão',
+        resumoAno: 'Resumo do Ano Fiscal (Saldos por Mês)',
+        resumoAnoSub: 'Visão consolidada mês a mês dos saldos finais',
+        totalEconomizado: 'Total Economizado',
+        totalGasto: 'Total Gasto',
+        proporcaoAnual: 'Proporção Anual: Gastos vs Economia',
+        proporcaoAnualSub: 'Comparativo do total gasto no ano contra o valor líquido economizado',
+        nenhumDadoAno: 'Nenhum dado financeiro registrado neste ano fiscal',
+        saldoInicial: 'Saldo Inicial:',
+        saidaTotal: 'Saída Total',
+        entradaTotal: 'Entrada Total',
+        lucroMes: 'Lucro do Mês',
+        crescimento: '% Crescimento',
+        saldoFinal: 'Saldo Atual/Final',
+        faturaCartoes: 'Fatura Cartões',
+        aReceber: 'A Receber',
+        previsaoLiquida: 'Previsão Líquida',
+        cabGastos: 'Gastos (Fixos / Variáveis)',
+        cabRendas: 'Rendas (Fixas / Variáveis)',
+        cabCartoes: 'Gastos em Cartões',
+        colData: 'Data',
+        colArea: 'Área',
+        colBeneficiario: 'Beneficiário',
+        colPagador: 'Pagador',
+        colCartao: 'Cartão',
+        colDescricao: 'Descrição',
+        colValor: 'Valor',
+        gastosCategoriaMes: 'Gastos por Categoria do Mês',
+        subDespesasCartoes: 'Despesas + Cartões',
+        consumoLimite: 'Consumo de Limite por Cartão',
+        subFaturaAtual: 'Fatura Atual',
+        semGastosMes: 'Nenhum gasto registrado neste mês',
+        limite: 'Limite do Cartão:',
+        disponivel: 'Disponível:',
+        backupDesc: 'Faça o backup de seus dados ou restaure um arquivo de salvamento anterior.',
+        btnExportar: 'Exportar Backup (.json)',
+        btnImportar: 'Importar Backup',
+        statusLicenca: 'Status da Licença',
+        ativada: 'Ativada',
+        emailLicenciado: 'E-mail Licenciado:',
+        chaveAtiva: 'Chave Ativa:',
+        btnDesativar: 'Desativar / Trocar Licença',
+        novoAnoFiscal: 'Novo Ano Fiscal',
+        meses: ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'],
+        mesesLongos: ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'],
+        confirmExcluirConta: 'Deseja excluir esta conta bancária?'
+      },
+      'es-ES': {
+        subtituloHeader: 'Control Personal',
+        btnSalvar: 'Guardar',
+        btnAdicionarConta: '+ Añadir Cuenta',
+        btnAdicionarArea: '+ Añadir',
+        btnAdicionarCartao: '+ Añadir Tarjeta',
+        btnNovaLinha: '+ Línea',
+        fechar: 'Cerrar',
+        dadosSalvos: '¡Datos guardados con éxito!',
+        tabTema: 'Tema',
+        tabIdioma: 'Idioma/Moneda',
+        tabDados: 'Datos',
+        tabLicenca: 'Licencia',
+        modoClaro: 'Modo Claro',
+        modoEscuro: 'Modo Oscuro',
+        modoSistema: 'Según el Sistema',
+        selecionarIdioma: 'Idioma & Moneda:',
+        contasTitulo: 'Cuentas Bancarias y Cooperativas',
+        contasSub: 'Gestión de cuentas corrientes, salarios y ahorros',
+        saldoConsolidado: 'Saldo Consolidado:',
+        novaContaBancaria: 'Nueva Cuenta Bancaria',
+        bancoInstituicao: 'Banco / Institución:',
+        tipoConta: 'Tipo de Cuenta:',
+        contaCorrente: 'Cuenta Corriente',
+        contaSalario: 'Cuenta Salario',
+        contaPoupanca: 'Cuenta de Ahorros',
+        saldoInicialLabel: 'Saldo Inicial:',
+        cancelar: 'Cancelar',
+        salvar: 'Guardar',
+        salvarConta: 'Guardar Cuenta',
+        areasSaidas: 'Áreas de Salida (Gastos)',
+        novaCategoriaGasto: 'Nueva Categoría de Gasto',
+        areasEntradas: 'Áreas de Entrada (Ingresos)',
+        novaCategoriaRenda: 'Nueva Categoría de Ingreso',
+        cartoesCredito: 'Tarjetas de Crédito',
+        novoCartaoCredito: 'Nueva Tarjeta de Crédito',
+        banco: 'Banco:',
+        nomeCartao: 'Nombre de la Tarjeta:',
+        limiteCartao: 'Límite de la Tarjeta:',
+        salvarCartao: 'Guardar Tarjeta',
+        resumoAno: 'Resumen del Año Fiscal (Saldos por Mes)',
+        resumoAnoSub: 'Visión consolidada mes a mes de los saldos finales',
+        totalEconomizado: 'Total Ahorrado',
+        totalGasto: 'Gasto Total',
+        proporcaoAnual: 'Proporción Anual: Gastos vs Ahorro',
+        proporcaoAnualSub: 'Comparativo del gasto total del año frente al valor neto ahorrado',
+        nenhumDadoAno: 'Ningún dato financiero registrado en este año fiscal',
+        saldoInicial: 'Saldo Inicial:',
+        saidaTotal: 'Gasto Total',
+        entradaTotal: 'Ingreso Total',
+        lucroMes: 'Beneficio del Mes',
+        crescimento: '% Crecimiento',
+        saldoFinal: 'Saldo Actual/Final',
+        faturaCartoes: 'Factura Tarjetas',
+        aReceber: 'Por Cobrar',
+        previsaoLiquida: 'Previsión Neta',
+        cabGastos: 'Gastos (Fijos / Variables)',
+        cabRendas: 'Ingresos (Fijos / Variables)',
+        cabCartoes: 'Gastos con Tarjetas',
+        colData: 'Fecha',
+        colArea: 'Área',
+        colBeneficiario: 'Beneficiario',
+        colPagador: 'Pagador',
+        colCartao: 'Tarjeta',
+        colDescricao: 'Descripción',
+        colValor: 'Monto',
+        gastosCategoriaMes: 'Gastos por Categoría del Mes',
+        subDespesasCartoes: 'Gastos + Tarjetas',
+        consumoLimite: 'Consumo de Límite por Tarjeta',
+        subFaturaAtual: 'Factura Actual',
+        semGastosMes: 'Ningún gasto registrado en este mes',
+        limite: 'Límite de la Tarjeta:',
+        disponivel: 'Disponible:',
+        backupDesc: 'Realice una copia de seguridad o restaure un archivo anterior.',
+        btnExportar: 'Exportar Respaldo (.json)',
+        btnImportar: 'Importar Respaldo',
+        statusLicenca: 'Estado de la Licencia',
+        ativada: 'Activada',
+        emailLicenciado: 'Correo Licenciado:',
+        chaveAtiva: 'Clave Activa:',
+        btnDesativar: 'Desactivar / Cambiar Licencia',
+        novoAnoFiscal: 'Nuevo Año Fiscal',
+        meses: ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'],
+        mesesLongos: ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'],
+        confirmExcluirConta: '¿Desea eliminar esta cuenta bancaria?'
+      },
+      'en-US': {
+        subtituloHeader: 'Personal Finance',
+        btnSalvar: 'Save',
+        btnAdicionarConta: '+ Add Account',
+        btnAdicionarArea: '+ Add',
+        btnAdicionarCartao: '+ Add Card',
+        btnNovaLinha: '+ Line',
+        fechar: 'Close',
+        dadosSalvos: 'Data saved successfully!',
+        tabTema: 'Theme',
+        tabIdioma: 'Language/Currency',
+        tabDados: 'Data',
+        tabLicenca: 'License',
+        modoClaro: 'Light Mode',
+        modoEscuro: 'Dark Mode',
+        modoSistema: 'System Default',
+        selecionarIdioma: 'Language & Currency:',
+        contasTitulo: 'Bank & Credit Union Accounts',
+        contasSub: 'Checking, salary and savings accounts management',
+        saldoConsolidado: 'Consolidated Balance:',
+        novaContaBancaria: 'New Bank Account',
+        bancoInstituicao: 'Bank / Institution:',
+        tipoConta: 'Account Type:',
+        contaCorrente: 'Checking Account',
+        contaSalario: 'Salary Account',
+        contaPoupanca: 'Savings Account',
+        saldoInicialLabel: 'Starting Balance:',
+        cancelar: 'Cancel',
+        salvar: 'Save',
+        salvarConta: 'Save Account',
+        areasSaidas: 'Expense Categories',
+        novaCategoriaGasto: 'New Expense Category',
+        areasEntradas: 'Income Categories',
+        novaCategoriaRenda: 'New Income Category',
+        cartoesCredito: 'Credit Cards',
+        novoCartaoCredito: 'New Credit Card',
+        banco: 'Bank:',
+        nomeCartao: 'Card Name:',
+        limiteCartao: 'Card Limit:',
+        salvarCartao: 'Save Card',
+        resumoAno: 'Fiscal Year Summary (Monthly Balances)',
+        resumoAnoSub: 'Consolidated month-to-month final balances',
+        totalEconomizado: 'Total Saved',
+        totalGasto: 'Total Expenses',
+        proporcaoAnual: 'Annual Ratio: Expenses vs Savings',
+        proporcaoAnualSub: 'Comparison of total annual spending against net savings',
+        nenhumDadoAno: 'No financial data recorded in this fiscal year',
+        saldoInicial: 'Starting Balance:',
+        saidaTotal: 'Total Expenses',
+        entradaTotal: 'Total Income',
+        lucroMes: 'Monthly Profit',
+        crescimento: '% Growth',
+        saldoFinal: 'Current/Final Balance',
+        faturaCartoes: 'Card Statements',
+        aReceber: 'Receivables',
+        previsaoLiquida: 'Net Forecast',
+        cabGastos: 'Expenses (Fixed / Variable)',
+        cabRendas: 'Income (Fixed / Variable)',
+        cabCartoes: 'Credit Card Spending',
+        colData: 'Date',
+        colArea: 'Category',
+        colBeneficiario: 'Payee',
+        colPagador: 'Payer',
+        colCartao: 'Card',
+        colDescricao: 'Description',
+        colValor: 'Amount',
+        gastosCategoriaMes: 'Monthly Spending by Category',
+        subDespesasCartoes: 'Expenses + Cards',
+        consumoLimite: 'Credit Limit Usage by Card',
+        subFaturaAtual: 'Current Statement',
+        semGastosMes: 'No expenses recorded this month',
+        limite: 'Card Limit:',
+        disponivel: 'Available:',
+        backupDesc: 'Backup your data or restore from a previous save file.',
+        btnExportar: 'Export Backup (.json)',
+        btnImportar: 'Import Backup',
+        statusLicenca: 'License Status',
+        ativada: 'Activated',
+        emailLicenciado: 'Licensed Email:',
+        chaveAtiva: 'Active Key:',
+        btnDesativar: 'Deactivate / Change License',
+        novoAnoFiscal: 'New Fiscal Year',
+        meses: ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],
+        mesesLongos: ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'],
+        confirmExcluirConta: 'Do you want to delete this bank account?'
+      }
+    };
+
+    function t(chave) {
+      const idioma = (db && db.config && db.config.idioma) || 'pt-BR';
+      const dict = I18N[idioma] || I18N['pt-BR'];
+      return dict[chave] !== undefined ? dict[chave] : (I18N['pt-BR'][chave] || chave);
+    }
+
+    function aplicarIdioma(lang, salvar = true) {
+      if (!I18N[lang]) lang = 'pt-BR';
+      if (salvar) { db.config.idioma = lang; salvarTudo(); }
+      const sel = document.getElementById('selectIdioma');
+      if (sel) sel.value = lang;
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        const txt = t(k);
+        if (typeof txt === 'string') el.textContent = txt;
+      });
+
+      inicializarBotoesMeses();
+      if (abaAtiva === 'MENU') renderizarMenu();
+      else renderizarMes();
+    }
+
+    function inicializarIdioma() {
+      aplicarIdioma((db && db.config && db.config.idioma) || 'pt-BR', false);
+    }
+
+    function alternarAbaConfig(aba) {
+      ['tema', 'idioma', 'dados', 'licenca'].forEach(item => {
+        const btn = document.getElementById(`btnAba${item.charAt(0).toUpperCase() + item.slice(1)}`);
+        const painel = document.getElementById(`painelConfig${item.charAt(0).toUpperCase() + item.slice(1)}`);
+        if (btn) btn.className = (item === aba) ? 'text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 text-white transition' : 'text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition';
+        if (painel) {
+          if (item === aba) painel.classList.remove('hidden');
+          else painel.classList.add('hidden');
+        }
+      });
+    }
+
+    function sanitize(str) {
+      if (typeof str !== 'string') return '';
+      return str.replace(/[&<>"']/g, function(m) {
+        switch (m) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case "'": return '&#039;';
+          default: return m;
+        }
+      });
+    }
+
+    function sanitizeNumber(val) {
+      if (val === '' || val === null || val === undefined) return 0;
+      const num = parseFloat(val);
+      return isNaN(num) || !isFinite(num) ? 0 : num;
+    }
+
+    const LOGOS_BANCOS = {
+      "Nubank": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#820AD1"/><path d="M28 66V34h12l15 22V34h11v32H54L39 44v22z" fill="#fff"/></svg>`,
+      "Itaú": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#EC7000"/><text x="50" y="64" font-family="sans-serif" font-weight="900" font-size="36" fill="#003399" text-anchor="middle">itaú</text></svg>`,
+      "Bradesco": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#CC092F"/><circle cx="50" cy="40" r="14" fill="#fff"/><path d="M30 72c0-12 9-20 20-20s20 8 20 20z" fill="#fff"/></svg>`,
+      "Banco do Brasil": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#FCDE00"/><path d="M25 35h50v10H25zM25 55h50v10H25z" fill="#003882"/><text x="50" y="58" font-family="sans-serif" font-weight="900" font-size="28" fill="#003882" text-anchor="middle">BB</text></svg>`,
+      "Caixa": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#006699"/><text x="50" y="64" font-family="sans-serif" font-weight="900" font-size="34" fill="#F37021" text-anchor="middle">X</text></svg>`,
+      "Santander": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#EC0000"/><path d="M35 65c-4-4-2-12 4-15 8-4 16 0 16-6 0-4-3-6-7-6-6 0-9 4-11 9l-7-3c3-8 9-13 18-13 10 0 17 5 17 14 0 9-7 14-16 17-6 2-7 6-7 8 0 2 2 3 5 3 5 0 9-3 11-7l7 4c-3 7-9 11-18 11-8 0-15-4-15-12z" fill="#fff"/></svg>`,
+      "Inter": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#FF7A00"/><text x="50" y="62" font-family="sans-serif" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">inter</text></svg>`,
+      "Sicredi": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#00843D"/><circle cx="50" cy="50" r="22" fill="#84BD00"/></svg>`,
+      "Sicoob": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#003641"/><path d="M30 65l20-30 20 30z" fill="#00AE9D"/></svg>`,
+      "Cresol": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#F15A24"/><circle cx="50" cy="50" r="26" fill="#FF5500" stroke="#FFFFFF" stroke-width="6"/><circle cx="50" cy="50" r="13" fill="#FFFFFF"/></svg>`,
+      "BTG Pactual": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#001E62"/><text x="50" y="62" font-family="sans-serif" font-weight="900" font-size="24" fill="#fff" text-anchor="middle">BTG</text></svg>`,
+      "Outro": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#475569"/><path d="M30 65V35l20-10 20 10v30z" fill="#fff"/></svg>`
+    };
+
+    const LISTA_BANCOS_NOMES = Object.keys(LOGOS_BANCOS);
+    const meses = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+    const AREAS_SAIDAS_DEFAULT = [
+      "Alim. Bás", "Alim. Sec.", "Padaria", "Refeição fora", "Delivery",
+      "Lazer", "Farmácia", "Academia", "Moradia", "Educação", 
+      "Fatura Cartões", "Dízimo e doações", "Outros"
+    ];
+
+    const AREAS_ENTRADAS_DEFAULT = [
+      "Salário", "Dividendos", "Pensão", "Extra", "Vendas", "Outros"
+    ];
+
+    let anoAtivo = new Date().getFullYear();
+    let abaAtiva = meses[new Date().getMonth()];
+    let chartSetoresMes = null;
+    let chartPizzaMenu = null;
+
+    function carregarDadosSeguros() {
+      try {
+        const raw = localStorage.getItem('fintrack_database_secure_v2');
+        if (!raw) return criarDbInicial();
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object' || !parsed.config || !parsed.anos) {
+          return criarDbInicial();
+        }
+        return parsed;
+      } catch (e) {
+        return criarDbInicial();
+      }
+    }
+
+    function criarDbInicial() {
+      return {
+        config: {
+          tema: 'system',
+          idioma: 'pt-BR',
+          saidas: [...AREAS_SAIDAS_DEFAULT],
+          entradas: [...AREAS_ENTRADAS_DEFAULT],
+          cartoes: [
+            { id: 1, nome: "Cartão 1", banco: "Nubank", limite: 2500 },
+            { id: 2, nome: "Cartão 2", banco: "Inter", limite: 3000 }
+          ],
+          contasBancarias: [
+            { id: 1, banco: "Nubank", tipo: "Conta Corrente", saldo: 1500.00 },
+            { id: 2, banco: "Cresol", tipo: "Conta Salário", saldo: 3200.00 },
+            { id: 3, banco: "Sicredi", tipo: "Conta Poupança", saldo: 5000.00 }
+          ]
+        },
+        anos: { [anoAtivo]: gerarEstruturaAno() }
+      };
+    }
+
+    let db = carregarDadosSeguros();
+
+    function verificarLicencaAtiva() {
+      const tela = document.getElementById('telaAtivacao');
+      if (!db.config.licenca || !db.config.licenca.ativa) {
+        if (tela) tela.classList.remove('hidden');
+        return false;
+      } else {
+        if (tela) tela.classList.add('hidden');
+        document.getElementById('lblEmailLicenca').textContent = db.config.licenca.email || '';
+        document.getElementById('lblChaveLicenca').textContent = db.config.licenca.chave || '';
+        return true;
+      }
+    }
+
+    function processarAtivacao() {
+      const email = document.getElementById('inputEmailAtivacao').value.trim();
+      const chave = document.getElementById('inputChaveAtivacao').value.trim().toUpperCase();
+      const erro = document.getElementById('erroAtivacao');
+
+      if (!email || !email.includes('@')) {
+        erro.textContent = "Digite um e-mail válido.";
+        erro.classList.remove('hidden');
+        return;
+      }
+      if (!chave.startsWith('FT-')) {
+        erro.textContent = "Chave de ativação inválida.";
+        erro.classList.remove('hidden');
+        return;
+      }
+
+      db.config.licenca = { ativa: true, email: email, chave: chave };
+      salvarTudo();
+      erro.classList.add('hidden');
+      document.getElementById('telaAtivacao').classList.add('hidden');
+      verificarLicencaAtiva();
+      exibirAvisoRapido("Aplicativo ativado com sucesso!");
+    }
+
+    function desativarLicenca() {
+      db.config.licenca = { ativa: false, email: '', chave: '' };
+      salvarTudo();
+      fecharModalConfig();
+      verificarLicencaAtiva();
+    }
+
+    function abrirModalConfig() { document.getElementById('modalConfig')?.classList.remove('hidden'); }
+    function fecharModalConfig() { document.getElementById('modalConfig')?.classList.add('hidden'); }
+
+    function aplicarTema(tema, salvar = true) {
+      if (salvar) { db.config.tema = tema; salvarTudo(); }
+      const root = document.documentElement;
+      document.querySelectorAll(`input[name="opcaoTema"]`).forEach(r => { if (r.value === tema) r.checked = true; });
+
+      if (tema === 'dark' || (tema === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+      if (abaAtiva === 'MENU') renderizarMenu(); else renderizarMes();
+    }
+
+    function formatarMoeda(val) {
+      const num = sanitizeNumber(val);
+      const idioma = (db && db.config && db.config.idioma) || 'pt-BR';
+      let locale = 'pt-BR', currency = 'BRL';
+      if (idioma === 'es-ES') { locale = 'es-ES'; currency = 'EUR'; }
+      if (idioma === 'en-US') { locale = 'en-US'; currency = 'USD'; }
+      return new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(num);
+    }
+
+    function gerarEstruturaAno() {
+      const estrutura = {};
+      meses.forEach(m => { estrutura[m] = { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] }; });
+      return estrutura;
+    }
+
+    function inicializarBotoesMeses() {
+      const container = document.getElementById('containerAbasMeses');
+      if (!container) return;
+      const mesesLabels = t('meses');
+      container.innerHTML = meses.map((m, idx) => `
+        <button type="button" onclick="selecionarAba('${m}')" id="tab-${m}" class="tab-btn px-2.5 py-2 font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-b-2 border-transparent whitespace-nowrap">${mesesLabels[idx] || m}</button>
+      `).join('');
+    }
+
+    function carregarAnosFiscais() {
+      const seletor = document.getElementById('seletorAnoFiscal');
+      if (!seletor) return;
+      const anosDisponiveis = Object.keys(db.anos).sort((a,b) => a - b);
+      seletor.innerHTML = anosDisponiveis.map(a => `<option value="${a}" ${Number(a) === anoAtivo ? 'selected' : ''}>${a}</option>`).join('');
+    }
+
+    function selecionarAno(ano) {
+      anoAtivo = Number(ano);
+      if (!db.anos[anoAtivo]) { db.anos[anoAtivo] = gerarEstruturaAno(); salvarTudo(); }
+      carregarAnosFiscais();
+      if (abaAtiva === 'MENU') renderizarMenu(); else renderizarMes();
+    }
+
+    function mudarAno(delta) {
+      const anos = Object.keys(db.anos).map(Number).sort((a,b) => a - b);
+      let idx = anos.indexOf(anoAtivo);
+      if (idx !== -1 && anos[idx + delta]) selecionarAno(anos[idx + delta]);
+    }
+
+    function togglePainelAdicionar(tipo, forcar = null) {
+      const mapeamento = { 'ano': 'painelAddAno', 'conta': 'painelAddConta', 'saida': 'painelAddSaida', 'entrada': 'painelAddEntrada', 'cartao': 'painelAddCartao' };
+      const painel = document.getElementById(mapeamento[tipo]);
+      if (!painel) return;
+      const deveAbrir = forcar !== null ? forcar : painel.classList.contains('hidden');
+      if (deveAbrir) {
+        if (tipo === 'ano') {
+          const inpAno = document.getElementById('inputNovoAno');
+          if (inpAno) inpAno.value = Math.max(...Object.keys(db.anos).map(Number)) + 1;
+        }
+        painel.classList.remove('hidden');
+      } else {
+        painel.classList.add('hidden');
+      }
+    }
+
+    function confirmarAdicionarAno() {
+      const inp = document.getElementById('inputNovoAno');
+      const anoNum = parseInt(inp ? inp.value : '', 10);
+      if (anoNum && !isNaN(anoNum) && anoNum >= 2000 && anoNum <= 2100) {
+        if (!db.anos[anoNum]) { db.anos[anoNum] = gerarEstruturaAno(); salvarTudo(); }
+        togglePainelAdicionar('ano', false);
+        selecionarAno(anoNum);
+        exibirAvisoRapido(`Ano ${anoNum} ativado`);
+      } else {
+        exibirAvisoRapido("Ano inválido");
+      }
+    }
+
+    function confirmarAdicionarConta() {
+      db.config.contasBancarias.push({
+        id: Date.now(),
+        banco: document.getElementById('novoBancoConta').value,
+        tipo: document.getElementById('novoTipoConta').value,
+        saldo: sanitizeNumber(document.getElementById('novoSaldoConta').value)
+      });
+      salvarTudo();
+      togglePainelAdicionar('conta', false);
+      renderizarContasBancarias();
+      exibirAvisoRapido("Conta adicionada!");
+    }
+
+    function confirmarAdicionarArea(tipo) {
+      const input = document.getElementById(tipo === 'saidas' ? 'novoNomeSaida' : 'novoNomeEntrada');
+      const nome = input ? input.value.trim() : '';
+      if (nome) {
+        db.config[tipo].push(sanitize(nome));
+        salvarTudo();
+        if (input) input.value = '';
+        togglePainelAdicionar(tipo === 'saidas' ? 'saida' : 'entrada', false);
+        renderizarMenu();
+        exibirAvisoRapido("Categoria adicionada!");
+      }
+    }
+
+    function confirmarAdicionarCartao() {
+      db.config.cartoes.push({
+        id: Date.now(),
+        nome: sanitize(document.getElementById('novoNomeCartao').value.trim() || 'Cartão'),
+        banco: document.getElementById('novoBancoCartao').value,
+        limite: sanitizeNumber(document.getElementById('novoLimiteCartao').value)
+      });
+      salvarTudo();
+      togglePainelAdicionar('cartao', false);
+      renderizarMenu();
+      exibirAvisoRapido("Cartão adicionado!");
+    }
+
+    function selecionarAba(nome) {
+      abaAtiva = nome;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+        b.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400');
+      });
+      document.getElementById(`tab-${nome}`)?.classList.add('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+
+      const viewMenu = document.getElementById('view-MENU');
+      const viewMes = document.getElementById('view-MES');
+
+      if (nome === 'MENU') {
+        viewMenu?.classList.remove('hidden');
+        viewMes?.classList.add('hidden');
+        renderizarMenu();
+      } else {
+        viewMenu?.classList.add('hidden');
+        viewMes?.classList.remove('hidden');
+        renderizarMes();
+      }
+    }
+
+    function renderizarMenu() {
+      renderizarContasBancarias();
+
+      document.getElementById('listaSaidasMenu').innerHTML = db.config.saidas.map((area, idx) => `
+        <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <input type="text" value="${sanitize(area)}" onchange="editarNomeArea('saidas', ${idx}, this.value)" class="flex-1 bg-transparent text-slate-800 dark:text-slate-200 px-1 font-medium">
+          <button type="button" onclick="removerArea('saidas', ${idx})" class="text-slate-400 hover:text-rose-500 px-1 font-bold">&times;</button>
+        </div>
+      `).join('');
+
+      document.getElementById('listaEntradasMenu').innerHTML = db.config.entradas.map((area, idx) => `
+        <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+          <input type="text" value="${sanitize(area)}" onchange="editarNomeArea('entradas', ${idx}, this.value)" class="flex-1 bg-transparent text-slate-800 dark:text-slate-200 px-1 font-medium">
+          <button type="button" onclick="removerArea('entradas', ${idx})" class="text-slate-400 hover:text-rose-500 px-1 font-bold">&times;</button>
+        </div>
+      `).join('');
+
+      document.getElementById('listaCartoesMenu').innerHTML = db.config.cartoes.map((c, idx) => `
+        <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-5 h-5 flex items-center justify-center flex-shrink-0">${LOGOS_BANCOS[c.banco] || LOGOS_BANCOS["Outro"]}</div>
+              <select onchange="atualizarBancoCartao(${idx}, this.value)" class="bg-transparent text-[11px] font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer w-20">
+                ${LISTA_BANCOS_NOMES.map(b => `<option value="${b}" ${c.banco === b ? 'selected' : ''} class="dark:bg-slate-900">${b}</option>`).join('')}
+              </select>
+              <input type="text" value="${sanitize(c.nome)}" onchange="editarNomeCartao(${idx}, this.value)" class="bg-transparent font-medium text-slate-800 dark:text-slate-200 truncate w-24">
+            </div>
+            <button type="button" onclick="removerCartao(${idx})" class="text-slate-400 hover:text-rose-500 font-bold px-1.5">&times;</button>
+          </div>
+          <div class="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <span class="text-slate-500 dark:text-slate-400 text-[10px]">${t('limite')}</span>
+            <input type="number" min="0" step="0.01" value="${sanitizeNumber(c.limite)}" onchange="editarLimiteCartao(${idx}, this.value)" class="w-24 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-0.5 text-right text-amber-600 dark:text-amber-400 mono font-semibold text-xs">
+          </div>
+        </div>
+      `).join('');
+
+      const dadosAno = db.anos[anoAtivo] || gerarEstruturaAno();
+      let totalGastoAno = 0, totalEconomizadoAno = 0;
+
+      document.getElementById('resumoMesesMenu').innerHTML = meses.map((m, idx) => {
+        const dMes = dadosAno[m] || { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] };
+        const rendas = dMes.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+        const totalSaidasMes = dMes.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0) + dMes.cartoes.reduce((a, c) => a + sanitizeNumber(c.valor), 0);
+        const saldoFinalMes = sanitizeNumber(dMes.saldoInicial) + rendas - totalSaidasMes;
+        const lucroMes = rendas - totalSaidasMes;
+
+        totalGastoAno += totalSaidasMes;
+        if (lucroMes > 0) totalEconomizadoAno += lucroMes;
+
+        return `
+          <div class="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-600 dark:text-slate-300 text-[10px] font-mono">${t('meses')[idx] || m}</span>
+              <span class="text-[9px] text-slate-400 font-mono">${anoAtivo}</span>
+            </div>
+            <div class="mt-2 space-y-0.5">
+              <div class="flex justify-between text-[9px] text-slate-400"><span>Gasto:</span><span class="mono text-rose-500 font-semibold">${formatarMoeda(totalSaidasMes)}</span></div>
+              <div class="flex justify-between text-[9px] text-slate-400"><span>Saldo:</span><span class="mono font-semibold ${saldoFinalMes >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatarMoeda(saldoFinalMes)}</span></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('resumoGastoAno').textContent = formatarMoeda(totalGastoAno);
+      document.getElementById('resumoEconomiaAno').textContent = formatarMoeda(totalEconomizadoAno);
+      renderizarGraficoPizzaMenu(totalGastoAno, totalEconomizadoAno);
+    }
+
+    function renderizarContasBancarias() {
+      const container = document.getElementById('listaContasBancarias');
+      if (!container) return;
+      let total = 0;
+
+      container.innerHTML = db.config.contasBancarias.map((conta, idx) => {
+        total += sanitizeNumber(conta.saldo);
+        return `
+          <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col justify-between gap-2 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 flex items-center justify-center">${LOGOS_BANCOS[conta.banco] || LOGOS_BANCOS["Outro"]}</div>
+                <select onchange="atualizarConta(${idx}, 'banco', this.value)" class="bg-transparent font-semibold text-slate-800 dark:text-slate-200 text-xs cursor-pointer outline-none">
+                  ${LISTA_BANCOS_NOMES.map(b => `<option value="${b}" ${conta.banco === b ? 'selected' : ''} class="dark:bg-slate-900">${b}</option>`).join('')}
+                </select>
+              </div>
+              <button type="button" onclick="removerContaBancaria(${idx})" class="text-slate-400 hover:text-rose-500 font-bold px-1">&times;</button>
+            </div>
+            
+            <div>
+              <select onchange="atualizarConta(${idx}, 'tipo', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer">
+                <option value="Conta Corrente" ${conta.tipo === 'Conta Corrente' ? 'selected' : ''}>${t('contaCorrente')}</option>
+                <option value="Conta Salário" ${conta.tipo === 'Conta Salário' ? 'selected' : ''}>${t('contaSalario')}</option>
+                <option value="Conta Poupança" ${conta.tipo === 'Conta Poupança' ? 'selected' : ''}>${t('contaPoupanca')}</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
+              <span class="text-slate-500 dark:text-slate-400 text-[10px]">Saldo:</span>
+              <input type="number" step="0.01" value="${sanitizeNumber(conta.saldo)}" onchange="atualizarConta(${idx}, 'saldo', this.value)" class="w-28 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-0.5 text-right font-bold mono text-emerald-600 text-xs">
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('totalContasBancarias').textContent = formatarMoeda(total);
+    }
+
+    function atualizarConta(idx, campo, val) {
+      db.config.contasBancarias[idx][campo] = campo === 'saldo' ? sanitizeNumber(val) : sanitize(val);
+      salvarTudo();
+      renderizarContasBancarias();
+    }
+
+    function removerContaBancaria(idx) {
+      if (confirm(t('confirmExcluirConta'))) {
+        db.config.contasBancarias.splice(idx, 1);
+        salvarTudo();
+        renderizarContasBancarias();
+        exibirAvisoRapido("Conta removida");
+      }
+    }
+
+    function editarNomeArea(tipo, idx, nome) {
+      if (nome.trim()) { db.config[tipo][idx] = sanitize(nome.trim()); salvarTudo(); }
+    }
+
+    function removerArea(tipo, idx) {
+      if (db.config[tipo].length <= 1) { exibirAvisoRapido("Mantenha ao menos uma área"); return; }
+      db.config[tipo].splice(idx, 1);
+      salvarTudo();
+      renderizarMenu();
+    }
+
+    function atualizarBancoCartao(idx, banco) { db.config.cartoes[idx].banco = sanitize(banco); salvarTudo(); renderizarMenu(); }
+    function editarNomeCartao(idx, nome) { if (nome.trim()) { db.config.cartoes[idx].nome = sanitize(nome.trim()); salvarTudo(); } }
+    function editarLimiteCartao(idx, val) { db.config.cartoes[idx].limite = sanitizeNumber(val); salvarTudo(); }
+    function removerCartao(idx) {
+      if (db.config.cartoes.length <= 1) { exibirAvisoRapido("Mantenha ao menos 1 cartão"); return; }
+      db.config.cartoes.splice(idx, 1); salvarTudo(); renderizarMenu();
+    }
+
+    function renderizarGraficoPizzaMenu(totalGasto, totalEconomia) {
+      const canvas = document.getElementById('graficoPizzaMenu');
+      const msgVazio = document.getElementById('graficoPizzaVazioMsg');
+      if (!canvas) return;
+
+      const totalConsolidado = totalGasto + totalEconomia;
+      if (totalConsolidado === 0) {
+        if (chartPizzaMenu) { chartPizzaMenu.destroy(); chartPizzaMenu = null; }
+        canvas.classList.add('opacity-0');
+        msgVazio?.classList.remove('hidden');
+        return;
+      }
+
+      canvas.classList.remove('opacity-0');
+      msgVazio?.classList.add('hidden');
+      if (chartPizzaMenu) chartPizzaMenu.destroy();
+
+      chartPizzaMenu = new Chart(canvas.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: [t('totalGasto'), t('totalEconomizado')],
+          datasets: [{ data: [totalGasto, totalEconomia], backgroundColor: ['#f43f5e', '#10b981'], borderWidth: 1 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569', font: { size: 10 } } },
+            tooltip: { callbacks: { label: c => ` ${c.label}: ${formatarMoeda(c.raw)}` } }
+          }
+        }
+      });
+    }
+
+    function renderizarMes() {
+      if (!db.anos[anoAtivo]) db.anos[anoAtivo] = gerarEstruturaAno();
+      if (!db.anos[anoAtivo][abaAtiva]) db.anos[anoAtivo][abaAtiva] = { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] };
+
+      const mesData = db.anos[anoAtivo][abaAtiva];
+      
+      const idxMesAtual = meses.indexOf(abaAtiva);
+      if (mesData.saldoInicial === 0 && idxMesAtual > 0) {
+        const mesAnteriorKey = meses[idxMesAtual - 1];
+        const dadosMesAnt = db.anos[anoAtivo][mesAnteriorKey];
+        if (dadosMesAnt) {
+          const rendasAnt = dadosMesAnt.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+          const saidasAnt = dadosMesAnt.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0) + dadosMesAnt.cartoes.reduce((a, c) => a + sanitizeNumber(c.valor), 0);
+          mesData.saldoInicial = sanitizeNumber(dadosMesAnt.saldoInicial) + rendasAnt - saidasAnt;
+        }
+      }
+
+      document.getElementById('tituloMesAtual').textContent = `${t('mesesLongos')[idxMesAtual] || abaAtiva} ${anoAtivo}`;
+      document.getElementById('inputSaldoInicial').value = sanitizeNumber(mesData.saldoInicial);
+
+      document.getElementById('corpoGastos').innerHTML = mesData.gastos.map((g, i) => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+          <td class="p-1"><input type="text" value="${sanitize(g.data || '')}" placeholder="DD/MM" onchange="atualizarLinhaItem('gastos', ${i}, 'data', this.value)"></td>
+          <td class="p-1"><select onchange="atualizarLinhaItem('gastos', ${i}, 'area', this.value)" class="dark:bg-slate-900 text-slate-800 dark:text-slate-200">${db.config.saidas.map(a => `<option value="${sanitize(a)}" ${g.area === a ? 'selected' : ''}>${sanitize(a)}</option>`).join('')}</select></td>
+          <td class="p-1"><input type="text" value="${sanitize(g.beneficiario || '')}" placeholder="${t('colBeneficiario')}" onchange="atualizarLinhaItem('gastos', ${i}, 'beneficiario', this.value)"></td>
+          <td class="p-1"><input type="text" value="${sanitize(g.descricao || '')}" placeholder="${t('colDescricao')}" onchange="atualizarLinhaItem('gastos', ${i}, 'descricao', this.value)"></td>
+          <td class="p-1"><input type="number" step="0.01" value="${g.valor !== 0 ? g.valor : ''}" class="text-right mono font-semibold text-rose-600 dark:text-rose-400" placeholder="0,00" onchange="atualizarLinhaItem('gastos', ${i}, 'valor', this.value)"></td>
+          <td class="p-1 text-center"><button type="button" onclick="removerLinha('gastos', ${i})" class="text-slate-400 hover:text-rose-500 font-bold">&times;</button></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('corpoRendas').innerHTML = mesData.rendas.map((r, i) => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+          <td class="p-1"><input type="text" value="${sanitize(r.data || '')}" placeholder="DD/MM" onchange="atualizarLinhaItem('rendas', ${i}, 'data', this.value)"></td>
+          <td class="p-1"><select onchange="atualizarLinhaItem('rendas', ${i}, 'area', this.value)" class="dark:bg-slate-900 text-slate-800 dark:text-slate-200">${db.config.entradas.map(a => `<option value="${sanitize(a)}" ${r.area === a ? 'selected' : ''}>${sanitize(a)}</option>`).join('')}</select></td>
+          <td class="p-1"><input type="text" value="${sanitize(r.pagador || '')}" placeholder="${t('colPagador')}" onchange="atualizarLinhaItem('rendas', ${i}, 'pagador', this.value)"></td>
+          <td class="p-1"><input type="text" value="${sanitize(r.descricao || '')}" placeholder="${t('colDescricao')}" onchange="atualizarLinhaItem('rendas', ${i}, 'descricao', this.value)"></td>
+          <td class="p-1"><input type="number" step="0.01" value="${r.valor !== 0 ? r.valor : ''}" class="text-right mono font-semibold text-emerald-600 dark:text-emerald-400" placeholder="0,00" onchange="atualizarLinhaItem('rendas', ${i}, 'valor', this.value)"></td>
+          <td class="p-1 text-center"><button type="button" onclick="removerLinha('rendas', ${i})" class="text-slate-400 hover:text-rose-500 font-bold">&times;</button></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('corpoCartoes').innerHTML = mesData.cartoes.map((c, i) => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+          <td class="p-1"><input type="text" value="${sanitize(c.data || '')}" placeholder="DD/MM" onchange="atualizarLinhaItem('cartoes', ${i}, 'data', this.value)"></td>
+          <td class="p-1"><input type="text" value="${sanitize(c.beneficiario || '')}" placeholder="${t('colBeneficiario')}" onchange="atualizarLinhaItem('cartoes', ${i}, 'beneficiario', this.value)"></td>
+          <td class="p-1"><select onchange="atualizarLinhaItem('cartoes', ${i}, 'cartao', this.value)" class="dark:bg-slate-900 text-slate-800 dark:text-slate-200">${db.config.cartoes.map(cart => `<option value="${sanitize(cart.nome)}" ${c.cartao === cart.nome ? 'selected' : ''}>${sanitize(cart.nome)}</option>`).join('')}</select></td>
+          <td class="p-1"><select onchange="atualizarLinhaItem('cartoes', ${i}, 'area', this.value)" class="dark:bg-slate-900 text-slate-800 dark:text-slate-200">${db.config.saidas.map(a => `<option value="${sanitize(a)}" ${c.area === a ? 'selected' : ''}>${sanitize(a)}</option>`).join('')}</select></td>
+          <td class="p-1"><input type="text" value="${sanitize(c.descricao || '')}" placeholder="${t('colDescricao')}" onchange="atualizarLinhaItem('cartoes', ${i}, 'descricao', this.value)"></td>
+          <td class="p-1"><input type="number" step="0.01" value="${c.valor !== 0 ? c.valor : ''}" class="text-right mono font-semibold text-amber-600 dark:text-amber-400" placeholder="0,00" onchange="atualizarLinhaItem('cartoes', ${i}, 'valor', this.value)"></td>
+          <td class="p-1 text-center"><button type="button" onclick="removerLinha('cartoes', ${i})" class="text-slate-400 hover:text-rose-500 font-bold">&times;</button></td>
+        </tr>
+      `).join('');
+
+      atualizarCalculosMes();
+    }
+
+    function adicionarLinha(tipo) {
+      if (!db.anos[anoAtivo]) db.anos[anoAtivo] = gerarEstruturaAno();
+      if (!db.anos[anoAtivo][abaAtiva]) db.anos[anoAtivo][abaAtiva] = { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] };
+      const mesData = db.anos[anoAtivo][abaAtiva];
+      if (tipo === 'gastos') mesData.gastos.push({ data: '', area: db.config.saidas[0], beneficiario: '', descricao: '', valor: 0 });
+      if (tipo === 'rendas') mesData.rendas.push({ data: '', area: db.config.entradas[0], pagador: '', descricao: '', valor: 0 });
+      if (tipo === 'cartoes') mesData.cartoes.push({ data: '', beneficiario: '', cartao: db.config.cartoes[0]?.nome || "Cartão 1", area: db.config.saidas[0], descricao: '', valor: 0 });
+      renderizarMes();
+    }
+
+    function removerLinha(tipo, idx) {
+      db.anos[anoAtivo][abaAtiva][tipo].splice(idx, 1);
+      salvarTudo();
+      renderizarMes();
+    }
+
+    function atualizarLinhaItem(tipo, idx, campo, val) {
+      db.anos[anoAtivo][abaAtiva][tipo][idx][campo] = campo === 'valor' ? sanitizeNumber(val) : sanitize(val);
+      atualizarCalculosMes();
+    }
+
+    function atualizarCalculosMes() {
+      if (!db.anos[anoAtivo] || !db.anos[anoAtivo][abaAtiva]) return;
+      const mesData = db.anos[anoAtivo][abaAtiva];
+      mesData.saldoInicial = sanitizeNumber(document.getElementById('inputSaldoInicial').value);
+
+      const gastosDiretos = mesData.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0);
+      const totalRendas = mesData.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+      const faturas = {};
+      db.config.cartoes.forEach(c => faturas[c.nome] = 0);
+
+      let totalCartoes = 0;
+      mesData.cartoes.forEach(c => {
+        const val = sanitizeNumber(c.valor);
+        totalCartoes += val;
+        faturas[c.cartao] = (faturas[c.cartao] || 0) + val;
+      });
+
+      const totalSaidasGeral = gastosDiretos + totalCartoes;
+      const lucroMes = totalRendas - totalSaidasGeral;
+      const saldoFinal = mesData.saldoInicial + lucroMes;
+
+      document.getElementById('cardSaida').textContent = formatarMoeda(totalSaidasGeral);
+      document.getElementById('cardEntrada').textContent = formatarMoeda(totalRendas);
+      document.getElementById('cardLucro').textContent = formatarMoeda(lucroMes);
+      document.getElementById('cardCrescimento').textContent = mesData.saldoInicial !== 0 ? ((lucroMes / Math.abs(mesData.saldoInicial)) * 100).toFixed(2) + '%' : '0,00%';
+      document.getElementById('cardSaldoFinal').textContent = formatarMoeda(saldoFinal);
+      document.getElementById('cardAPagar').textContent = formatarMoeda(totalCartoes);
+      document.getElementById('cardAReceber').textContent = formatarMoeda(0);
+      document.getElementById('cardPrevisao').textContent = formatarMoeda(saldoFinal);
+
+      document.getElementById('painelFaturasCartoes').innerHTML = db.config.cartoes.map(c => {
+        const faturaAtual = faturas[c.nome] || 0;
+        const limiteSeguro = sanitizeNumber(c.limite);
+        const pct = limiteSeguro > 0 ? Math.min((faturaAtual / limiteSeguro) * 100, 100) : 0;
+        return `
+          <div class="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-slate-800 dark:text-slate-200">${sanitize(c.nome)}</span>
+              <span class="mono font-semibold text-amber-600">${formatarMoeda(faturaAtual)}</span>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-amber-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const setores = {};
+      mesData.gastos.forEach(g => { if (g.valor > 0) setores[g.area] = (setores[g.area] || 0) + sanitizeNumber(g.valor); });
+      mesData.cartoes.forEach(c => { if (c.valor > 0) setores[c.area] = (setores[c.area] || 0) + sanitizeNumber(c.valor); });
+      atualizarGraficoSetores(setores);
+      salvarTudo();
+    }
+
+    function atualizarGraficoSetores(setores) {
+      const canvas = document.getElementById('graficoSetoresMes');
+      const msgVazio = document.getElementById('graficoVazioMsg');
+      if (!canvas) return;
+
+      const labels = Object.keys(setores), data = Object.values(setores);
+      if (labels.length === 0) {
+        if (chartSetoresMes) chartSetoresMes.destroy();
+        canvas.classList.add('opacity-0');
+        msgVazio?.classList.remove('hidden');
+        return;
+      }
+
+      canvas.classList.remove('opacity-0');
+      msgVazio?.classList.add('hidden');
+      if (chartSetoresMes) chartSetoresMes.destroy();
+
+      chartSetoresMes = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: data, backgroundColor: ['#e11d48', '#2563eb', '#059669', '#d97706', '#7c3aed', '#0891b2'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10 } } } }, cutout: '70%' }
+      });
+    }
+
+    function exportarBackup() {
+      const dadosStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dadosStr);
+      downloadAnchor.setAttribute("download", `fintrack_backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importarBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && parsed.config && parsed.anos) {
+            db = parsed;
+            salvarTudo();
+            location.reload();
+          } else {
+            alert("Arquivo de backup inválido.");
+          }
+        } catch (err) {
+          alert("Erro ao ler o arquivo de backup.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function salvarTudo() {
+      try { localStorage.setItem('fintrack_database_secure_v2', JSON.stringify(db)); } catch (e) {}
+    }
+
+    function exibirAvisoRapido(msg) {
+      const aviso = document.createElement('div');
+      aviso.className = 'fixed bottom-4 right-4 bg-slate-900/90 text-white border border-slate-700 px-3 py-1.5 rounded-lg shadow-lg font-medium text-xs z-50';
+      aviso.textContent = msg;
+      document.body.appendChild(aviso);
+      setTimeout(() => aviso.remove(), 1500);
+    }
+
+    function salvarTudoComAviso() {
+      salvarTudo();
+      exibirAvisoRapido(t('dadosSalvos'));
+    }
+
+    window.onload = function() {
+      aplicarTema((db && db.config && db.config.tema) || 'system', false);
+      inicializarIdioma();
+      inicializarBotoesMeses();
+      verificarLicencaAtiva();
+      carregarAnosFiscais();
+      selecionarAba(abaAtiva);
+    };
+  </script>
+</body>
+</html>
