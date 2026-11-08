@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="Referrer-Policy" content="no-referrer">
-  <!-- Blindagem de Segurança Avançada contra CSP Injection e exfiltração de dados -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <!-- PWA Manifest e Configurações Offline -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#059669">
   <title>FinanceTrack - Controle Pessoal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -282,12 +282,12 @@
               <p class="text-[10px] text-slate-400" data-i18n="proporcaoAnualSub">Comparativo do total gasto no ano contra o valor líquido economizado</p>
             </div>
           </div>
-          <div class="flex flex-col items-center justify-center relative min-h-[260px]">
-            <div class="relative w-full max-w-[280px] h-[240px]">
-              <canvas id="graficoPizzaMenu"></canvas>
-              <div id="graficoPizzaVazioMsg" class="hidden absolute inset-0 flex items-center justify-center text-slate-400 text-xs text-center px-4" data-i18n="nenhumDadoAno">
-                Nenhum dado financeiro registrado neste ano fiscal
-              </div>
+          <div class="flex flex-col items-center justify-center relative min-h-[220px]">
+            <div class="w-full max-w-md h-48 bg-slate-50 dark:bg-slate-950 rounded-xl p-2 border border-slate-200 dark:border-slate-800 flex items-center justify-center">
+              <canvas id="canvasPizzaMenu" width="300" height="160" class="w-full h-full"></canvas>
+            </div>
+            <div id="graficoPizzaVazioMsg" class="hidden text-slate-400 text-xs text-center mt-2" data-i18n="nenhumDadoAno">
+              Nenhum dado financeiro registrado neste ano fiscal
             </div>
           </div>
         </div>
@@ -300,11 +300,14 @@
       
       <!-- INDICADORES DO TOPO -->
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2 gap-2">
           <span class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-xs" id="tituloMesAtual">JANEIRO 2026</span>
           <div class="flex items-center gap-2">
             <span class="text-slate-500 dark:text-slate-400" data-i18n="saldoInicial">Saldo Inicial:</span>
-            <input type="number" id="inputSaldoInicial" onchange="atualizarCalculosMes()" class="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 px-2 py-0.5 rounded-lg text-right w-28 text-slate-800 dark:text-white mono font-semibold" value="0">
+            <div class="flex items-center bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
+              <input type="number" id="inputSaldoInicial" onchange="atualizarCalculosMes()" class="bg-transparent px-2 py-0.5 text-right w-28 text-slate-800 dark:text-white mono font-semibold outline-none" value="0">
+              <button type="button" id="btnToggleAutoSaldo" onclick="alternarModoSaldoInicial()" class="px-2 py-0.5 text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition" title="Alternar entre Valor Manual e Automático (Mês Anterior)">AUTO</button>
+            </div>
           </div>
         </div>
 
@@ -379,6 +382,7 @@
             <table class="w-full border-collapse">
               <thead class="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-[10px] uppercase border-b border-slate-200 dark:border-slate-800 sticky top-0">
                 <tr>
+                  <th class="p-1.5 w-12 text-center" title="Status Pendente / A Receber">⏳</th>
                   <th class="p-1.5 w-16 text-left" data-i18n="colData">Data</th>
                   <th class="p-1.5 w-28 text-left" data-i18n="colArea">Área</th>
                   <th class="p-1.5 text-left" data-i18n="colPagador">Pagador</th>
@@ -424,8 +428,8 @@
             <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-wider" data-i18n="gastosCategoriaMes">Gastos por Categoria do Mês</h4>
             <span class="text-[10px] text-slate-400" data-i18n="subDespesasCartoes">Despesas + Cartões</span>
           </div>
-          <div class="flex-1 flex items-center justify-center relative min-h-[220px]">
-            <canvas id="graficoSetoresMes"></canvas>
+          <div class="flex-1 flex flex-col items-center justify-center relative min-h-[220px]">
+            <canvas id="canvasDonutMes" width="280" height="180" class="w-full h-full max-h-[190px]"></canvas>
             <div id="graficoVazioMsg" class="hidden absolute text-slate-400 text-center text-xs" data-i18n="semGastosMes">Nenhum gasto registrado neste mês</div>
           </div>
         </div>
@@ -449,7 +453,7 @@
           <button type="button" onclick="alternarAbaConfig('tema')" id="btnAbaTema" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 text-white transition" data-i18n="tabTema">Tema</button>
           <button type="button" onclick="alternarAbaConfig('idioma')" id="btnAbaIdioma" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabIdioma">Idioma</button>
           <button type="button" onclick="alternarAbaConfig('dados')" id="btnAbaDados" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabDados">Dados</button>
-          <button type="button" onclick="alternarAbaConfig('licenca')" id="btnAbaLicenca" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabLicenca">Licença</button>
+          <button type="button" onclick="alternarAbaConfig('licenca')" id="btnAbaLicencaConfig" class="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tabLicenca">Licença</button>
         </div>
         <button type="button" onclick="fecharModalConfig()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white text-lg font-bold leading-none">&times;</button>
       </div>
@@ -482,8 +486,18 @@
         </div>
       </div>
 
-      <!-- ABA DADOS (BACKUP) -->
+      <!-- ABA DADOS (BACKUP & REGRAS) -->
       <div id="painelConfigDados" class="space-y-3 hidden">
+        <div class="space-y-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+          <label class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer">
+            <div>
+              <span class="font-semibold text-slate-800 dark:text-slate-200 block text-[11px]" data-i18n="regraFaturaDuplicada">Evitar Duplicidade de Fatura</span>
+              <span class="text-[10px] text-slate-400 block" data-i18n="regraFaturaSub">Não somar pagamentos manuais de cartão se já lançou na tabela</span>
+            </div>
+            <input type="checkbox" id="chkEvitarDup" onchange="toggleRegraDuplicidade(this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+          </label>
+        </div>
+
         <p class="text-slate-500 text-[11px]" data-i18n="backupDesc">Faça o backup de seus dados ou restaure um arquivo de salvamento anterior.</p>
         <button type="button" onclick="exportarBackup()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-xl text-xs transition" data-i18n="btnExportar">Exportar Backup (.json)</button>
         <label class="block w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-center font-semibold py-2 rounded-xl text-xs transition cursor-pointer">
@@ -599,8 +613,10 @@
         ativada: 'Ativada',
         emailLicenciado: 'E-mail Licenciado:',
         chaveAtiva: 'Chave Ativa:',
-        btnDesativar: 'Desativar / Trocar Licença',
         novoAnoFiscal: 'Novo Ano Fiscal',
+        regraFaturaDuplicada: 'Evitar Duplicidade de Fatura',
+        regraFaturaSub: 'Desconsiderar pagamento manual se houver compras lançadas',
+        smsImportado: 'SMS financeiro importado com sucesso!',
         meses: ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'],
         mesesLongos: ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'],
         confirmExcluirConta: 'Deseja excluir esta conta bancária?'
@@ -685,8 +701,9 @@
         ativada: 'Activada',
         emailLicenciado: 'Correo Licenciado:',
         chaveAtiva: 'Clave Activa:',
-        btnDesativar: 'Desactivar / Cambiar Licencia',
-        novoAnoFiscal: 'Nuevo Año Fiscal',
+        regraFaturaDuplicada: 'Evitar Duplicidad de Facturas',
+        regraFaturaSub: 'Descontar pago manual si hay compras registradas',
+        smsImportado: '¡SMS financiero importado com éxito!',
         meses: ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'],
         mesesLongos: ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'],
         confirmExcluirConta: '¿Desea eliminar esta cuenta bancaria?'
@@ -771,8 +788,9 @@
         ativada: 'Activated',
         emailLicenciado: 'Licensed Email:',
         chaveAtiva: 'Active Key:',
-        btnDesativar: 'Deactivate / Change License',
-        novoAnoFiscal: 'New Fiscal Year',
+        regraFaturaDuplicada: 'Prevent Duplicate Statements',
+        regraFaturaSub: 'Ignore manual statement payment if card expenses exist',
+        smsImportado: 'Financial SMS imported successfully!',
         meses: ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],
         mesesLongos: ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'],
         confirmExcluirConta: 'Do you want to delete this bank account?'
@@ -808,7 +826,8 @@
 
     function alternarAbaConfig(aba) {
       ['tema', 'idioma', 'dados', 'licenca'].forEach(item => {
-        const btn = document.getElementById(`btnAba${item.charAt(0).toUpperCase() + item.slice(1)}`);
+        const btnId = item === 'licenca' ? 'btnAbaLicencaConfig' : `btnAba${item.charAt(0).toUpperCase() + item.slice(1)}`;
+        const btn = document.getElementById(btnId);
         const painel = document.getElementById(`painelConfig${item.charAt(0).toUpperCase() + item.slice(1)}`);
         if (btn) btn.className = (item === aba) ? 'text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-600 text-white transition' : 'text-xs font-bold px-2.5 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition';
         if (painel) {
@@ -868,8 +887,6 @@
 
     let anoAtivo = new Date().getFullYear();
     let abaAtiva = meses[new Date().getMonth()];
-    let chartSetoresMes = null;
-    let chartPizzaMenu = null;
 
     function carregarDadosSeguros() {
       try {
@@ -878,6 +895,9 @@
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object' || !parsed.config || !parsed.anos) {
           return criarDbInicial();
+        }
+        if (parsed.config.evitarDuplicidadeFatura === undefined) {
+          parsed.config.evitarDuplicidadeFatura = true;
         }
         return parsed;
       } catch (e) {
@@ -890,6 +910,7 @@
         config: {
           tema: 'system',
           idioma: 'pt-BR',
+          evitarDuplicidadeFatura: true,
           saidas: [...AREAS_SAIDAS_DEFAULT],
           entradas: [...AREAS_ENTRADAS_DEFAULT],
           cartoes: [
@@ -945,15 +966,19 @@
       exibirAvisoRapido("Aplicativo ativado com sucesso!");
     }
 
-    function desativarLicenca() {
-      db.config.licenca = { ativa: false, email: '', chave: '' };
-      salvarTudo();
-      fecharModalConfig();
-      verificarLicencaAtiva();
+    function abrirModalConfig() {
+      document.getElementById('modalConfig')?.classList.remove('hidden');
+      const chkDup = document.getElementById('chkEvitarDup');
+      if (chkDup) chkDup.checked = !!db.config.evitarDuplicidadeFatura;
     }
 
-    function abrirModalConfig() { document.getElementById('modalConfig')?.classList.remove('hidden'); }
     function fecharModalConfig() { document.getElementById('modalConfig')?.classList.add('hidden'); }
+
+    function toggleRegraDuplicidade(val) {
+      db.config.evitarDuplicidadeFatura = val;
+      salvarTudo();
+      if (abaAtiva !== 'MENU') atualizarCalculosMes();
+    }
 
     function aplicarTema(tema, salvar = true) {
       if (salvar) { db.config.tema = tema; salvarTudo(); }
@@ -979,7 +1004,7 @@
 
     function gerarEstruturaAno() {
       const estrutura = {};
-      meses.forEach(m => { estrutura[m] = { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] }; });
+      meses.forEach(m => { estrutura[m] = { saldoInicial: 0, modoSaldoAuto: true, gastos: [], rendas: [], cartoes: [] }; });
       return estrutura;
     }
 
@@ -1142,10 +1167,30 @@
       let totalGastoAno = 0, totalEconomizadoAno = 0;
 
       document.getElementById('resumoMesesMenu').innerHTML = meses.map((m, idx) => {
-        const dMes = dadosAno[m] || { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] };
+        const dMes = dadosAno[m] || { saldoInicial: 0, modoSaldoAuto: true, gastos: [], rendas: [], cartoes: [] };
+        
+        let sIni = sanitizeNumber(dMes.saldoInicial);
+        if (idx > 0 && dMes.modoSaldoAuto !== false) {
+          const mesAntKey = meses[idx - 1];
+          sIni = calcularSaldoFinalMes(anoAtivo, mesAntKey);
+        } else if (idx === 0 && dMes.modoSaldoAuto !== false) {
+          const anoAnt = anoAtivo - 1;
+          if (db.anos[anoAnt]) {
+            sIni = calcularSaldoFinalMes(anoAnt, 'DEZ');
+          }
+        }
+
         const rendas = dMes.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
-        const totalSaidasMes = dMes.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0) + dMes.cartoes.reduce((a, c) => a + sanitizeNumber(c.valor), 0);
-        const saldoFinalMes = sanitizeNumber(dMes.saldoInicial) + rendas - totalSaidasMes;
+        const gastosDiretos = dMes.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0);
+        const totalCartoes = dMes.cartoes.reduce((a, c) => a + sanitizeNumber(c.valor), 0);
+        
+        let totalSaidasMes = gastosDiretos + totalCartoes;
+        if (!db.config.evitarDuplicidadeFatura) {
+          const faturasGastos = dMes.gastos.filter(g => g.area === 'Fatura Cartões').reduce((a, g) => a + sanitizeNumber(g.valor), 0);
+          totalSaidasMes += faturasGastos;
+        }
+
+        const saldoFinalMes = sIni + rendas - totalSaidasMes;
         const lucroMes = rendas - totalSaidasMes;
 
         totalGastoAno += totalSaidasMes;
@@ -1167,7 +1212,7 @@
 
       document.getElementById('resumoGastoAno').textContent = formatarMoeda(totalGastoAno);
       document.getElementById('resumoEconomiaAno').textContent = formatarMoeda(totalEconomizadoAno);
-      renderizarGraficoPizzaMenu(totalGastoAno, totalEconomizadoAno);
+      renderizarCanvasPizzaMenu(totalGastoAno, totalEconomizadoAno);
     }
 
     function renderizarContasBancarias() {
@@ -1186,7 +1231,7 @@
                   ${LISTA_BANCOS_NOMES.map(b => `<option value="${b}" ${conta.banco === b ? 'selected' : ''} class="dark:bg-slate-900">${b}</option>`).join('')}
                 </select>
               </div>
-              <button type="button" onclick="removerContaBancaria(${idx})" class="text-slate-400 hover:text-rose-500 font-bold px-1">&times;</button>
+              <button type="button" onclick="removerContaBancaria(${conta.id !== undefined ? conta.id : idx})" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 cursor-pointer">&times;</button>
             </div>
             
             <div>
@@ -1213,9 +1258,14 @@
       renderizarContasBancarias();
     }
 
-    function removerContaBancaria(idx) {
+    function removerContaBancaria(idOuIndex) {
       if (confirm(t('confirmExcluirConta'))) {
-        db.config.contasBancarias.splice(idx, 1);
+        const idx = db.config.contasBancarias.findIndex(c => c.id === idOuIndex);
+        if (idx !== -1) {
+          db.config.contasBancarias.splice(idx, 1);
+        } else {
+          db.config.contasBancarias.splice(idOuIndex, 1);
+        }
         salvarTudo();
         renderizarContasBancarias();
         exibirAvisoRapido("Conta removida");
@@ -1241,59 +1291,118 @@
       db.config.cartoes.splice(idx, 1); salvarTudo(); renderizarMenu();
     }
 
-    function renderizarGraficoPizzaMenu(totalGasto, totalEconomia) {
-      const canvas = document.getElementById('graficoPizzaMenu');
+    function calcularSaldoFinalMes(ano, mKey) {
+      const dMes = db.anos[ano]?.[mKey];
+      if (!dMes) return 0;
+
+      let sIni = sanitizeNumber(dMes.saldoInicial);
+      const idx = meses.indexOf(mKey);
+      if (idx > 0 && dMes.modoSaldoAuto !== false) {
+        sIni = calcularSaldoFinalMes(ano, meses[idx - 1]);
+      } else if (idx === 0 && dMes.modoSaldoAuto !== false) {
+        const anoAnt = ano - 1;
+        if (db.anos[anoAnt]) {
+          sIni = calcularSaldoFinalMes(anoAnt, 'DEZ');
+        }
+      }
+
+      const rendas = dMes.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+      const gastosDiretos = dMes.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0);
+      const totalCartoes = dMes.cartoes.reduce((a, c) => a + sanitizeNumber(c.valor), 0);
+
+      let totalSaidas = gastosDiretos + totalCartoes;
+      if (!db.config.evitarDuplicidadeFatura) {
+        const faturaGastos = dMes.gastos.filter(g => g.area === 'Fatura Cartões').reduce((a, g) => a + sanitizeNumber(g.valor), 0);
+        totalSaidas += faturaGastos;
+      }
+
+      return sIni + rendas - totalSaidas;
+    }
+
+    function renderizarCanvasPizzaMenu(totalGasto, totalEconomia) {
+      const canvas = document.getElementById('canvasPizzaMenu');
       const msgVazio = document.getElementById('graficoPizzaVazioMsg');
       if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const totalConsolidado = totalGasto + totalEconomia;
-      if (totalConsolidado === 0) {
-        if (chartPizzaMenu) { chartPizzaMenu.destroy(); chartPizzaMenu = null; }
-        canvas.classList.add('opacity-0');
+      const total = totalGasto + totalEconomia;
+      if (total === 0) {
         msgVazio?.classList.remove('hidden');
+        canvas.classList.add('hidden');
         return;
       }
 
-      canvas.classList.remove('opacity-0');
       msgVazio?.classList.add('hidden');
-      if (chartPizzaMenu) chartPizzaMenu.destroy();
+      canvas.classList.remove('hidden');
 
-      chartPizzaMenu = new Chart(canvas.getContext('2d'), {
-        type: 'pie',
-        data: {
-          labels: [t('totalGasto'), t('totalEconomizado')],
-          datasets: [{ data: [totalGasto, totalEconomia], backgroundColor: ['#f43f5e', '#10b981'], borderWidth: 1 }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569', font: { size: 10 } } },
-            tooltip: { callbacks: { label: c => ` ${c.label}: ${formatarMoeda(c.raw)}` } }
-          }
-        }
+      const dados = [
+        { label: t('totalGasto'), valor: totalGasto, cor: '#f43f5e' },
+        { label: t('totalEconomizado'), valor: totalEconomia, cor: '#10b981' }
+      ];
+
+      let anguloAtual = -Math.PI / 2;
+      const centroX = 90, centroY = 80, raio = 65;
+
+      dados.forEach(d => {
+        if (d.valor <= anguloAtual) return;
+        const anguloSlice = (d.valor / total) * (2 * Math.PI);
+        ctx.beginPath();
+        ctx.moveTo(centroX, centroY);
+        ctx.arc(centroX, centroY, raio, anguloAtual, anguloAtual + anguloSlice);
+        ctx.closePath();
+        ctx.fillStyle = d.cor;
+        ctx.fill();
+        anguloAtual += anguloSlice;
+      });
+
+      // Legenda customizada à direita
+      let legY = 40;
+      dados.forEach(d => {
+        ctx.fillStyle = d.cor;
+        ctx.fillRect(180, legY, 12, 12);
+        ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#334155';
+        ctx.font = '10px Inter, sans-serif';
+        ctx.fillText(`${d.label}: ${formatarMoeda(d.valor)}`, 200, legY + 9);
+        legY += 24;
       });
     }
 
     function renderizarMes() {
       if (!db.anos[anoAtivo]) db.anos[anoAtivo] = gerarEstruturaAno();
-      if (!db.anos[anoAtivo][abaAtiva]) db.anos[anoAtivo][abaAtiva] = { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] };
+      if (!db.anos[anoAtivo][abaAtiva]) db.anos[anoAtivo][abaAtiva] = { saldoInicial: 0, modoSaldoAuto: true, gastos: [], rendas: [], cartoes: [] };
 
       const mesData = db.anos[anoAtivo][abaAtiva];
-      
+      if (mesData.modoSaldoAuto === undefined) mesData.modoSaldoAuto = true;
+
       const idxMesAtual = meses.indexOf(abaAtiva);
-      if (mesData.saldoInicial === 0 && idxMesAtual > 0) {
-        const mesAnteriorKey = meses[idxMesAtual - 1];
-        const dadosMesAnt = db.anos[anoAtivo][mesAnteriorKey];
-        if (dadosMesAnt) {
-          const rendasAnt = dadosMesAnt.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
-          const saidasAnt = dadosMesAnt.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0) + dadosMesAnt.cartoes.reduce((a, c) => a + sanitizeNumber(c.valor), 0);
-          mesData.saldoInicial = sanitizeNumber(dadosMesAnt.saldoInicial) + rendasAnt - saidasAnt;
+      let saldoIniCalculado = 0;
+      if (idxMesAtual > 0) {
+        saldoIniCalculado = calcularSaldoFinalMes(anoAtivo, meses[idxMesAtual - 1]);
+      } else {
+        const anoAnt = anoAtivo - 1;
+        if (db.anos[anoAnt]) {
+          saldoIniCalculado = calcularSaldoFinalMes(anoAnt, 'DEZ');
         }
       }
 
+      if (mesData.modoSaldoAuto) {
+        mesData.saldoInicial = saldoIniCalculado;
+      }
+
       document.getElementById('tituloMesAtual').textContent = `${t('mesesLongos')[idxMesAtual] || abaAtiva} ${anoAtivo}`;
-      document.getElementById('inputSaldoInicial').value = sanitizeNumber(mesData.saldoInicial);
+      const inpSaldo = document.getElementById('inputSaldoInicial');
+      inpSaldo.value = sanitizeNumber(mesData.saldoInicial);
+      inpSaldo.disabled = mesData.modoSaldoAuto;
+      
+      const btnAuto = document.getElementById('btnToggleAutoSaldo');
+      if (mesData.modoSaldoAuto) {
+        btnAuto.className = "px-2 py-0.5 text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-inner";
+        btnAuto.textContent = "AUTO";
+      } else {
+        btnAuto.className = "px-2 py-0.5 text-[10px] font-bold bg-slate-600 text-slate-200 hover:bg-slate-500 transition";
+        btnAuto.textContent = "MANUAL";
+      }
 
       document.getElementById('corpoGastos').innerHTML = mesData.gastos.map((g, i) => `
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
@@ -1302,18 +1411,19 @@
           <td class="p-1"><input type="text" value="${sanitize(g.beneficiario || '')}" placeholder="${t('colBeneficiario')}" onchange="atualizarLinhaItem('gastos', ${i}, 'beneficiario', this.value)"></td>
           <td class="p-1"><input type="text" value="${sanitize(g.descricao || '')}" placeholder="${t('colDescricao')}" onchange="atualizarLinhaItem('gastos', ${i}, 'descricao', this.value)"></td>
           <td class="p-1"><input type="number" step="0.01" value="${g.valor !== 0 ? g.valor : ''}" class="text-right mono font-semibold text-rose-600 dark:text-rose-400" placeholder="0,00" onchange="atualizarLinhaItem('gastos', ${i}, 'valor', this.value)"></td>
-          <td class="p-1 text-center"><button type="button" onclick="removerLinha('gastos', ${i})" class="text-slate-400 hover:text-rose-500 font-bold">&times;</button></td>
+          <td class="p-1 text-center"><button type="button" onclick="removerLinha('gastos', ${i})" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 cursor-pointer">&times;</button></td>
         </tr>
       `).join('');
 
       document.getElementById('corpoRendas').innerHTML = mesData.rendas.map((r, i) => `
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+          <td class="p-1 text-center"><input type="checkbox" ${r.pendente ? 'checked' : ''} onchange="atualizarLinhaItem('rendas', ${i}, 'pendente', this.checked)" class="w-3.5 h-3.5 text-emerald-600 rounded cursor-pointer" title="Marcar como pendente (A Receber)"></td>
           <td class="p-1"><input type="text" value="${sanitize(r.data || '')}" placeholder="DD/MM" onchange="atualizarLinhaItem('rendas', ${i}, 'data', this.value)"></td>
           <td class="p-1"><select onchange="atualizarLinhaItem('rendas', ${i}, 'area', this.value)" class="dark:bg-slate-900 text-slate-800 dark:text-slate-200">${db.config.entradas.map(a => `<option value="${sanitize(a)}" ${r.area === a ? 'selected' : ''}>${sanitize(a)}</option>`).join('')}</select></td>
           <td class="p-1"><input type="text" value="${sanitize(r.pagador || '')}" placeholder="${t('colPagador')}" onchange="atualizarLinhaItem('rendas', ${i}, 'pagador', this.value)"></td>
           <td class="p-1"><input type="text" value="${sanitize(r.descricao || '')}" placeholder="${t('colDescricao')}" onchange="atualizarLinhaItem('rendas', ${i}, 'descricao', this.value)"></td>
           <td class="p-1"><input type="number" step="0.01" value="${r.valor !== 0 ? r.valor : ''}" class="text-right mono font-semibold text-emerald-600 dark:text-emerald-400" placeholder="0,00" onchange="atualizarLinhaItem('rendas', ${i}, 'valor', this.value)"></td>
-          <td class="p-1 text-center"><button type="button" onclick="removerLinha('rendas', ${i})" class="text-slate-400 hover:text-rose-500 font-bold">&times;</button></td>
+          <td class="p-1 text-center"><button type="button" onclick="removerLinha('rendas', ${i})" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 cursor-pointer">&times;</button></td>
         </tr>
       `).join('');
 
@@ -1325,19 +1435,26 @@
           <td class="p-1"><select onchange="atualizarLinhaItem('cartoes', ${i}, 'area', this.value)" class="dark:bg-slate-900 text-slate-800 dark:text-slate-200">${db.config.saidas.map(a => `<option value="${sanitize(a)}" ${c.area === a ? 'selected' : ''}>${sanitize(a)}</option>`).join('')}</select></td>
           <td class="p-1"><input type="text" value="${sanitize(c.descricao || '')}" placeholder="${t('colDescricao')}" onchange="atualizarLinhaItem('cartoes', ${i}, 'descricao', this.value)"></td>
           <td class="p-1"><input type="number" step="0.01" value="${c.valor !== 0 ? c.valor : ''}" class="text-right mono font-semibold text-amber-600 dark:text-amber-400" placeholder="0,00" onchange="atualizarLinhaItem('cartoes', ${i}, 'valor', this.value)"></td>
-          <td class="p-1 text-center"><button type="button" onclick="removerLinha('cartoes', ${i})" class="text-slate-400 hover:text-rose-500 font-bold">&times;</button></td>
+          <td class="p-1 text-center"><button type="button" onclick="removerLinha('cartoes', ${i})" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 cursor-pointer">&times;</button></td>
         </tr>
       `).join('');
 
       atualizarCalculosMes();
     }
 
+    function alternarModoSaldoInicial() {
+      const mesData = db.anos[anoAtivo][abaAtiva];
+      mesData.modoSaldoAuto = !mesData.modoSaldoAuto;
+      salvarTudo();
+      renderizarMes();
+    }
+
     function adicionarLinha(tipo) {
       if (!db.anos[anoAtivo]) db.anos[anoAtivo] = gerarEstruturaAno();
-      if (!db.anos[anoAtivo][abaAtiva]) db.anos[anoAtivo][abaAtiva] = { saldoInicial: 0, gastos: [], rendas: [], cartoes: [] };
+      if (!db.anos[anoAtivo][abaAtiva]) db.anos[anoAtivo][abaAtiva] = { saldoInicial: 0, modoSaldoAuto: true, gastos: [], rendas: [], cartoes: [] };
       const mesData = db.anos[anoAtivo][abaAtiva];
       if (tipo === 'gastos') mesData.gastos.push({ data: '', area: db.config.saidas[0], beneficiario: '', descricao: '', valor: 0 });
-      if (tipo === 'rendas') mesData.rendas.push({ data: '', area: db.config.entradas[0], pagador: '', descricao: '', valor: 0 });
+      if (tipo === 'rendas') mesData.rendas.push({ pendente: false, data: '', area: db.config.entradas[0], pagador: '', descricao: '', valor: 0 });
       if (tipo === 'cartoes') mesData.cartoes.push({ data: '', beneficiario: '', cartao: db.config.cartoes[0]?.nome || "Cartão 1", area: db.config.saidas[0], descricao: '', valor: 0 });
       renderizarMes();
     }
@@ -1349,17 +1466,29 @@
     }
 
     function atualizarLinhaItem(tipo, idx, campo, val) {
-      db.anos[anoAtivo][abaAtiva][tipo][idx][campo] = campo === 'valor' ? sanitizeNumber(val) : sanitize(val);
+      const mesData = db.anos[anoAtivo][abaAtiva];
+      if (tipo === 'rendas' && campo === 'pendente') {
+        mesData.rendas[idx][campo] = !!val;
+      } else {
+        mesData.rendas[idx][campo] = campo === 'valor' ? sanitizeNumber(val) : sanitize(val);
+      }
       atualizarCalculosMes();
     }
 
     function atualizarCalculosMes() {
       if (!db.anos[anoAtivo] || !db.anos[anoAtivo][abaAtiva]) return;
       const mesData = db.anos[anoAtivo][abaAtiva];
-      mesData.saldoInicial = sanitizeNumber(document.getElementById('inputSaldoInicial').value);
+      
+      if (!mesData.modoSaldoAuto) {
+        mesData.saldoInicial = sanitizeNumber(document.getElementById('inputSaldoInicial').value);
+      }
 
       const gastosDiretos = mesData.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0);
-      const totalRendas = mesData.rendas.reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+      
+      // Separar Rendas recebidas vs A receber (pendentes)
+      const rendasConfirmadas = mesData.rendas.filter(r => !r.pendente).reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+      const rendasPendentes = mesData.rendas.filter(r => r.pendente).reduce((a, r) => a + sanitizeNumber(r.valor), 0);
+
       const faturas = {};
       db.config.cartoes.forEach(c => faturas[c.nome] = 0);
 
@@ -1370,18 +1499,24 @@
         faturas[c.cartao] = (faturas[c.cartao] || 0) + val;
       });
 
-      const totalSaidasGeral = gastosDiretos + totalCartoes;
-      const lucroMes = totalRendas - totalSaidasGeral;
-      const saldoFinal = mesData.saldoInicial + lucroMes;
+      let totalSaidasGeral = gastosDiretos + totalCartoes;
+      if (!db.config.evitarDuplicidadeFatura) {
+        const faturaGastos = mesData.gastos.filter(g => g.area === 'Fatura Cartões').reduce((a, g) => a + sanitizeNumber(g.valor), 0);
+        totalSaidasGeral += faturaGastos;
+      }
+
+      const lucroMes = rendasConfirmadas - totalSaidasGeral;
+      const saldoFinal = sanitizeNumber(mesData.saldoInicial) + lucroMes;
+      const previsaoLiquida = saldoFinal + rendasPendentes;
 
       document.getElementById('cardSaida').textContent = formatarMoeda(totalSaidasGeral);
-      document.getElementById('cardEntrada').textContent = formatarMoeda(totalRendas);
+      document.getElementById('cardEntrada').textContent = formatarMoeda(rendasConfirmadas);
       document.getElementById('cardLucro').textContent = formatarMoeda(lucroMes);
       document.getElementById('cardCrescimento').textContent = mesData.saldoInicial !== 0 ? ((lucroMes / Math.abs(mesData.saldoInicial)) * 100).toFixed(2) + '%' : '0,00%';
       document.getElementById('cardSaldoFinal').textContent = formatarMoeda(saldoFinal);
       document.getElementById('cardAPagar').textContent = formatarMoeda(totalCartoes);
-      document.getElementById('cardAReceber').textContent = formatarMoeda(0);
-      document.getElementById('cardPrevisao').textContent = formatarMoeda(saldoFinal);
+      document.getElementById('cardAReceber').textContent = formatarMoeda(rendasPendentes);
+      document.getElementById('cardPrevisao').textContent = formatarMoeda(previsaoLiquida);
 
       document.getElementById('painelFaturasCartoes').innerHTML = db.config.cartoes.map(c => {
         const faturaAtual = faturas[c.nome] || 0;
@@ -1403,35 +1538,87 @@
       const setores = {};
       mesData.gastos.forEach(g => { if (g.valor > 0) setores[g.area] = (setores[g.area] || 0) + sanitizeNumber(g.valor); });
       mesData.cartoes.forEach(c => { if (c.valor > 0) setores[c.area] = (setores[c.area] || 0) + sanitizeNumber(c.valor); });
-      atualizarGraficoSetores(setores);
+      atualizarCanvasDonutMes(setores);
       salvarTudo();
     }
 
-    function atualizarGraficoSetores(setores) {
-      const canvas = document.getElementById('graficoSetoresMes');
+    function atualizarCanvasDonutMes(setores) {
+      const canvas = document.getElementById('canvasDonutMes');
       const msgVazio = document.getElementById('graficoVazioMsg');
       if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const labels = Object.keys(setores), data = Object.values(setores);
-      if (labels.length === 0) {
-        if (chartSetoresMes) chartSetoresMes.destroy();
-        canvas.classList.add('opacity-0');
+      const total = data.reduce((a, b) => a + b, 0);
+
+      if (total === 0) {
         msgVazio?.classList.remove('hidden');
+        canvas.classList.add('hidden');
         return;
       }
 
-      canvas.classList.remove('opacity-0');
       msgVazio?.classList.add('hidden');
-      if (chartSetoresMes) chartSetoresMes.destroy();
+      canvas.classList.remove('hidden');
 
-      chartSetoresMes = new Chart(canvas.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{ data: data, backgroundColor: ['#e11d48', '#2563eb', '#059669', '#d97706', '#7c3aed', '#0891b2'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 10 } } } }, cutout: '70%' }
+      const cores = ['#e11d48', '#2563eb', '#059669', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
+      let anguloAtual = -Math.PI / 2;
+      const centroX = 90, centroY = 85, raioExterno = 65, raioInterno = 42;
+
+      labels.forEach((lbl, idx) => {
+        const val = data[idx];
+        const anguloSlice = (val / total) * (2 * Math.PI);
+        const cor = cores[idx % cores.length];
+
+        ctx.beginPath();
+        ctx.arc(centroX, centroY, raioExterno, anguloAtual, anguloAtual + anguloSlice);
+        ctx.arc(centroX, centroY, raioInterno, anguloAtual + anguloSlice, anguloAtual, true);
+        ctx.closePath();
+        ctx.fillStyle = cor;
+        ctx.fill();
+
+        anguloAtual += anguloSlice;
       });
+
+      // Legenda à direita
+      let legY = 20;
+      labels.forEach((lbl, idx) => {
+        if (idx > 6) return;
+        const cor = cores[idx % cores.length];
+        ctx.fillStyle = cor;
+        ctx.fillRect(175, legY, 10, 10);
+        ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#334155';
+        ctx.font = '9px Inter, sans-serif';
+        const txt = `${lbl}: ${formatarMoeda(data[idx])}`;
+        ctx.fillText(txt.length > 22 ? txt.slice(0, 20) + '...' : txt, 190, legY + 8);
+        legY += 20;
+      });
+    }
+
+    function processarSMSCompartilhadoOuURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const smsTexto = urlParams.get('sms') || urlParams.get('text') || window.location.hash.replace('#sms=', '');
+      if (smsTexto) {
+        try {
+          const dec = decodeURIComponent(smsTexto);
+          const matchValor = dec.match(/(?:R\$|\$|EUR|€)\s*([\d\.,]+)/i);
+          if (matchValor) {
+            const val = parseFloat(matchValor[1].replace(/\./g, '').replace(',', '.'));
+            const mesAtualKey = meses[new Date().getMonth()];
+            if (!db.anos[anoAtivo]) db.anos[anoAtivo] = gerarEstruturaAno();
+            db.anos[anoAtivo][mesAtualKey].gastos.push({
+              data: new Date().toLocaleDateString('pt-BR').slice(0, 5),
+              area: db.config.saidas[0],
+              beneficiario: 'SMS Bancário',
+              descricao: dec.slice(0, 45),
+              valor: val
+            });
+            salvarTudo();
+            exibirAvisoRapido(t('smsImportado'));
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        } catch (e) {}
+      }
     }
 
     function exportarBackup() {
@@ -1474,12 +1661,19 @@
       aviso.className = 'fixed bottom-4 right-4 bg-slate-900/90 text-white border border-slate-700 px-3 py-1.5 rounded-lg shadow-lg font-medium text-xs z-50';
       aviso.textContent = msg;
       document.body.appendChild(aviso);
-      setTimeout(() => aviso.remove(), 1500);
+      setTimeout(() => aviso.remove(), 1800);
     }
 
     function salvarTudoComAviso() {
       salvarTudo();
       exibirAvisoRapido(t('dadosSalvos'));
+    }
+
+    // Registro do Service Worker para PWA Offline
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
     }
 
     window.onload = function() {
@@ -1488,6 +1682,7 @@
       inicializarBotoesMeses();
       verificarLicencaAtiva();
       carregarAnosFiscais();
+      processarSMSCompartilhadoOuURL();
       selecionarAba(abaAtiva);
     };
   </script>
