@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="Referrer-Policy" content="no-referrer">
-  <!-- PWA Manifest e Configurações Offline -->
-  <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#059669">
   <title>FinanceTrack - Controle Pessoal</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -34,35 +32,6 @@
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col text-xs transition-colors duration-200 antialiased overflow-x-hidden">
-
-  <!-- TELA DE ATIVAÇÃO POR E-MAIL -->
-  <div id="telaAtivacao" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 text-left">
-      <div class="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
-        <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-white text-base shadow-md">FT</div>
-        <div>
-          <h2 class="font-bold text-base text-slate-900 dark:text-slate-100">Ativação do FinanceTrack</h2>
-          <p class="text-slate-500 dark:text-slate-400 text-xs">Insira seu e-mail e chave de licença autorizada</p>
-        </div>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">E-mail Cadastrado:</label>
-          <input type="email" id="inputEmailAtivacao" placeholder="seu-email@exemplo.com" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-500 text-slate-800 dark:text-slate-100">
-        </div>
-        <div>
-          <label class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">Chave de Ativação:</label>
-          <input type="text" id="inputChaveAtivacao" placeholder="FT-XXXX-XXXX-XXXX" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none mono uppercase focus:border-emerald-500 text-slate-800 dark:text-slate-100">
-        </div>
-        <div id="erroAtivacao" class="text-rose-600 dark:text-rose-400 text-[11px] hidden font-medium"></div>
-      </div>
-
-      <div class="pt-2">
-        <button type="button" onclick="processarAtivacao()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-md">Ativar Aplicativo</button>
-      </div>
-    </div>
-  </div>
 
   <!-- CABEÇALHO -->
   <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm w-full">
@@ -142,8 +111,8 @@
                 <div>
                   <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="bancoInstituicao">Banco / Instituição:</label>
                   <select id="novoBancoConta" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
-                    <option value="Nubank">Nubank</option>
                     <option value="Cresol">Cresol</option>
+                    <option value="Nubank">Nubank</option>
                     <option value="Sicredi">Sicredi</option>
                     <option value="Sicoob">Sicoob</option>
                     <option value="Itaú">Itaú</option>
@@ -227,12 +196,12 @@
             <div>
               <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="banco">Banco:</label>
               <select id="novoBancoCartao" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+                <option value="Cresol">Cresol</option>
                 <option value="Nubank">Nubank</option>
                 <option value="Inter">Inter</option>
                 <option value="Itaú">Itaú</option>
                 <option value="Bradesco">Bradesco</option>
                 <option value="Santander">Santander</option>
-                <option value="Cresol">Cresol</option>
                 <option value="Sicredi">Sicredi</option>
                 <option value="Outro">Outro</option>
               </select>
@@ -251,10 +220,49 @@
             </div>
           </div>
           <div id="listaCartoesMenu" class="space-y-2 max-h-[360px] overflow-y-auto"></div>
+      </div>
+    </div>
+
+      <!-- 3. OBJETIVOS FINANCEIROS (METAS) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm relative">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
+          <div>
+            <h2 class="font-bold text-sm text-purple-600 dark:text-purple-400" data-i18n="objetivosTitulo">Objetivos Financeiros & Metas</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-[11px]" data-i18n="objetivosSub">Planeje conquistas como reserva de emergência, carro novo ou viagens</p>
+          </div>
+          <div class="relative">
+            <button type="button" onclick="togglePainelAdicionar('objetivo')" class="bg-purple-600 hover:bg-purple-500 text-white font-medium px-3.5 py-1.5 rounded-lg text-xs transition shadow-sm" data-i18n="btnAdicionarObjetivo">+ Adicionar Objetivo</button>
+            <!-- Painel Expansível Objetivo -->
+            <div id="painelAddObjetivo" class="hidden absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-2xl z-40 space-y-3 text-left">
+              <span class="font-bold text-xs text-slate-800 dark:text-slate-200 block border-b border-slate-200 dark:border-slate-800 pb-1.5" data-i18n="novoObjetivoMeta">Novo Objetivo / Meta</span>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="nomeObjetivo">Nome da Meta:</label>
+                <input type="text" id="novoNomeObjetivo" placeholder="Ex: Reserva de Emergência" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="valorAlvo">Valor Alvo (R$):</label>
+                <input type="number" step="0.01" id="novoValorAlvoObjetivo" placeholder="10000.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none mono text-right text-slate-800 dark:text-slate-100">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="valorAtualGuardado">Já Guardado (R$):</label>
+                <input type="number" step="0.01" id="novoValorGuardadoObjetivo" value="0.00" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none mono text-right text-slate-800 dark:text-slate-100">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400 block mb-0.5" data-i18n="prazoMeta">Prazo / Data Alvo:</label>
+                <input type="text" id="novoPrazoObjetivo" placeholder="Ex: Dez/2026" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs outline-none text-slate-800 dark:text-slate-100">
+              </div>
+              <div class="flex gap-2 justify-end pt-1">
+                <button type="button" onclick="togglePainelAdicionar('objetivo', false)" class="px-2.5 py-1 text-xs rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" data-i18n="cancelar">Cancelar</button>
+                <button type="button" onclick="confirmarAdicionarObjetivo()" class="px-3 py-1 text-xs rounded bg-purple-600 text-white font-semibold hover:bg-purple-500" data-i18n="salvarObjetivo">Salvar Meta</button>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div id="listaObjetivosMenu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- 3. RESUMO ANUAL (SALDO POR MÊS) -->
+    <!-- 4. RESUMO ANUAL (SALDO POR MÊS) -->
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-3">
           <div>
@@ -511,15 +519,11 @@
         <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-[10px] uppercase font-semibold text-slate-400" data-i18n="statusLicenca">Status da Licença</span>
-            <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]" data-i18n="ativada">Ativada</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]" data-i18n="ativada">Ativada (Padrão)</span>
           </div>
           <div>
-            <span class="text-[10px] text-slate-400 block" data-i18n="emailLicenciado">E-mail Licenciado:</span>
-            <span id="lblEmailLicenca" class="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">usuario@email.com</span>
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-400 block" data-i18n="chaveAtiva">Chave Ativa:</span>
-            <span id="lblChaveLicenca" class="font-mono text-[11px] text-slate-600 dark:text-slate-400">FT-XXXX-XXXX</span>
+            <span class="text-[10px] text-slate-400 block">Modo de Acesso:</span>
+            <span class="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">Acesso Direto / Ilimitado</span>
           </div>
         </div>
       </div>
@@ -539,6 +543,7 @@
         btnAdicionarConta: '+ Adicionar Conta',
         btnAdicionarArea: '+ Adicionar',
         btnAdicionarCartao: '+ Adicionar Cartão',
+        btnAdicionarObjetivo: '+ Adicionar Objetivo',
         btnNovaLinha: '+ Add',
         fechar: 'Fechar',
         dadosSalvos: 'Dados salvos com sucesso!',
@@ -573,6 +578,14 @@
         nomeCartao: 'Nome do Cartão:',
         limiteCartao: 'Limite do Cartão:',
         salvarCartao: 'Salvar Cartão',
+        objetivosTitulo: 'Objetivos Financeiros & Metas',
+        objetivosSub: 'Planeje conquistas como reserva de emergência, carro novo ou viagens',
+        novoObjetivoMeta: 'Novo Objetivo / Meta',
+        nomeObjetivo: 'Nome da Meta:',
+        valorAlvo: 'Valor Alvo (R$):',
+        valorAtualGuardado: 'Já Guardado (R$):',
+        prazoMeta: 'Prazo / Data Alvo:',
+        salvarObjetivo: 'Salvar Meta',
         resumoAno: 'Resumo do Ano Fiscal (Saldos por Mês)',
         resumoAnoSub: 'Visão consolidada mês a mês dos saldos finais',
         totalEconomizado: 'Total Economizado',
@@ -627,6 +640,7 @@
         btnAdicionarConta: '+ Añadir Cuenta',
         btnAdicionarArea: '+ Añadir',
         btnAdicionarCartao: '+ Añadir Tarjeta',
+        btnAdicionarObjetivo: '+ Añadir Objetivo',
         btnNovaLinha: '+ Add',
         fechar: 'Cerrar',
         dadosSalvos: '¡Datos guardados con éxito!',
@@ -661,6 +675,14 @@
         nomeCartao: 'Nombre de la Tarjeta:',
         limiteCartao: 'Límite de la Tarjeta:',
         salvarCartao: 'Guardar Tarjeta',
+        objetivosTitulo: 'Objetivos Financieros y Metas',
+        objetivosSub: 'Planifique logros como fondo de emergencia, coche nuevo o viajes',
+        novoObjetivoMeta: 'Nuevo Objetivo / Meta',
+        nomeObjetivo: 'Nombre de la Meta:',
+        valorAlvo: 'Valor Objetivo:',
+        valorAtualGuardado: 'Ya Ahorrado:',
+        prazoMeta: 'Plazo / Fecha Objetivo:',
+        salvarObjetivo: 'Guardar Meta',
         resumoAno: 'Resumen del Año Fiscal (Saldos por Mes)',
         resumoAnoSub: 'Visión consolidada mes a mes de los saldos finales',
         totalEconomizado: 'Total Ahorrado',
@@ -714,6 +736,7 @@
         btnAdicionarConta: '+ Add Account',
         btnAdicionarArea: '+ Add',
         btnAdicionarCartao: '+ Add Card',
+        btnAdicionarObjetivo: '+ Add Goal',
         btnNovaLinha: '+ Add',
         fechar: 'Close',
         dadosSalvos: 'Data saved successfully!',
@@ -748,6 +771,14 @@
         nomeCartao: 'Card Name:',
         limiteCartao: 'Card Limit:',
         salvarCartao: 'Save Card',
+        objetivosTitulo: 'Financial Goals & Targets',
+        objetivosSub: 'Plan milestones like emergency fund, new car, or vacations',
+        novoObjetivoMeta: 'New Goal / Target',
+        nomeObjetivo: 'Goal Name:',
+        valorAlvo: 'Target Amount:',
+        valorAtualGuardado: 'Already Saved:',
+        prazoMeta: 'Target Date / Deadline:',
+        salvarObjetivo: 'Save Goal',
         resumoAno: 'Fiscal Year Summary (Monthly Balances)',
         resumoAnoSub: 'Consolidated month-to-month final balances',
         totalEconomizado: 'Total Saved',
@@ -858,6 +889,7 @@
     }
 
     const LOGOS_BANCOS = {
+      "Cresol": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#F15A24"/><circle cx="50" cy="50" r="26" fill="#FF5500" stroke="#FFFFFF" stroke-width="6"/><circle cx="50" cy="50" r="13" fill="#FFFFFF"/></svg>`,
       "Nubank": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#820AD1"/><path d="M28 66V34h12l15 22V34h11v32H54L39 44v22z" fill="#fff"/></svg>`,
       "Itaú": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#EC7000"/><text x="50" y="64" font-family="sans-serif" font-weight="900" font-size="36" fill="#003399" text-anchor="middle">itaú</text></svg>`,
       "Bradesco": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#CC092F"/><circle cx="50" cy="40" r="14" fill="#fff"/><path d="M30 72c0-12 9-20 20-20s20 8 20 20z" fill="#fff"/></svg>`,
@@ -867,7 +899,6 @@
       "Inter": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#FF7A00"/><text x="50" y="62" font-family="sans-serif" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">inter</text></svg>`,
       "Sicredi": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#00843D"/><circle cx="50" cy="50" r="22" fill="#84BD00"/></svg>`,
       "Sicoob": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#003641"/><path d="M30 65l20-30 20 30z" fill="#00AE9D"/></svg>`,
-      "Cresol": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#F15A24"/><circle cx="50" cy="50" r="26" fill="#FF5500" stroke="#FFFFFF" stroke-width="6"/><circle cx="50" cy="50" r="13" fill="#FFFFFF"/></svg>`,
       "BTG Pactual": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#001E62"/><text x="50" y="62" font-family="sans-serif" font-weight="900" font-size="24" fill="#fff" text-anchor="middle">BTG</text></svg>`,
       "Outro": `<svg viewBox="0 0 100 100" class="w-6 h-6"><rect width="100" height="100" rx="20" fill="#475569"/><path d="M30 65V35l20-10 20 10v30z" fill="#fff"/></svg>`
     };
@@ -899,6 +930,12 @@
         if (parsed.config.evitarDuplicidadeFatura === undefined) {
           parsed.config.evitarDuplicidadeFatura = true;
         }
+        if (!parsed.config.objetivos) {
+          parsed.config.objetivos = [
+            { id: 1, nome: "Reserva de Emergência", alvo: 10000.00, guardado: 3500.00, prazo: "Dez/2026" },
+            { id: 2, nome: "Comprar um Carro", alvo: 45000.00, guardado: 12000.00, prazo: "Jul/2027" }
+          ];
+        }
         return parsed;
       } catch (e) {
         return criarDbInicial();
@@ -914,13 +951,17 @@
           saidas: [...AREAS_SAIDAS_DEFAULT],
           entradas: [...AREAS_ENTRADAS_DEFAULT],
           cartoes: [
-            { id: 1, nome: "Cartão 1", banco: "Nubank", limite: 2500 },
-            { id: 2, nome: "Cartão 2", banco: "Inter", limite: 3000 }
+            { id: 1, nome: "Cartão Cresol", banco: "Cresol", limite: 3500 },
+            { id: 2, nome: "Cartão Nubank", banco: "Nubank", limite: 2500 }
           ],
           contasBancarias: [
-            { id: 1, banco: "Nubank", tipo: "Conta Corrente", saldo: 1500.00 },
-            { id: 2, banco: "Cresol", tipo: "Conta Salário", saldo: 3200.00 },
+            { id: 1, banco: "Cresol", tipo: "Conta Corrente", saldo: 3500.00 },
+            { id: 2, banco: "Nubank", tipo: "Conta Salário", saldo: 1500.00 },
             { id: 3, banco: "Sicredi", tipo: "Conta Poupança", saldo: 5000.00 }
+          ],
+          objetivos: [
+            { id: 1, nome: "Reserva de Emergência", alvo: 10000.00, guardado: 3500.00, prazo: "Dez/2026" },
+            { id: 2, nome: "Comprar um Carro", alvo: 45000.00, guardado: 12000.00, prazo: "Jul/2027" }
           ]
         },
         anos: { [anoAtivo]: gerarEstruturaAno() }
@@ -928,43 +969,6 @@
     }
 
     let db = carregarDadosSeguros();
-
-    function verificarLicencaAtiva() {
-      const tela = document.getElementById('telaAtivacao');
-      if (!db.config.licenca || !db.config.licenca.ativa) {
-        if (tela) tela.classList.remove('hidden');
-        return false;
-      } else {
-        if (tela) tela.classList.add('hidden');
-        document.getElementById('lblEmailLicenca').textContent = db.config.licenca.email || '';
-        document.getElementById('lblChaveLicenca').textContent = db.config.licenca.chave || '';
-        return true;
-      }
-    }
-
-    function processarAtivacao() {
-      const email = document.getElementById('inputEmailAtivacao').value.trim();
-      const chave = document.getElementById('inputChaveAtivacao').value.trim().toUpperCase();
-      const erro = document.getElementById('erroAtivacao');
-
-      if (!email || !email.includes('@')) {
-        erro.textContent = "Digite um e-mail válido.";
-        erro.classList.remove('hidden');
-        return;
-      }
-      if (!chave.startsWith('FT-')) {
-        erro.textContent = "Chave de ativação inválida.";
-        erro.classList.remove('hidden');
-        return;
-      }
-
-      db.config.licenca = { ativa: true, email: email, chave: chave };
-      salvarTudo();
-      erro.classList.add('hidden');
-      document.getElementById('telaAtivacao').classList.add('hidden');
-      verificarLicencaAtiva();
-      exibirAvisoRapido("Aplicativo ativado com sucesso!");
-    }
 
     function abrirModalConfig() {
       document.getElementById('modalConfig')?.classList.remove('hidden');
@@ -1038,7 +1042,7 @@
     }
 
     function togglePainelAdicionar(tipo, forcar = null) {
-      const mapeamento = { 'ano': 'painelAddAno', 'conta': 'painelAddConta', 'saida': 'painelAddSaida', 'entrada': 'painelAddEntrada', 'cartao': 'painelAddCartao' };
+      const mapeamento = { 'ano': 'painelAddAno', 'conta': 'painelAddConta', 'saida': 'painelAddSaida', 'entrada': 'painelAddEntrada', 'cartao': 'painelAddCartao', 'objetivo': 'painelAddObjetivo' };
       const painel = document.getElementById(mapeamento[tipo]);
       if (!painel) return;
       const deveAbrir = forcar !== null ? forcar : painel.classList.contains('hidden');
@@ -1053,82 +1057,87 @@
       }
     }
 
-    function confirmarAdicionarAno() {
-      const inp = document.getElementById('inputNovoAno');
-      const anoNum = parseInt(inp ? inp.value : '', 10);
-      if (anoNum && !isNaN(anoNum) && anoNum >= 2000 && anoNum <= 2100) {
-        if (!db.anos[anoNum]) { db.anos[anoNum] = gerarEstruturaAno(); salvarTudo(); }
-        togglePainelAdicionar('ano', false);
-        selecionarAno(anoNum);
-        exibirAvisoRapido(`Ano ${anoNum} ativado`);
-      } else {
-        exibirAvisoRapido("Ano inválido");
-      }
-    }
+    function confirmarAdicionarObjetivo() {
+      const nome = sanitize(document.getElementById('novoNomeObjetivo').value.trim() || 'Nova Meta');
+      const alvo = sanitizeNumber(document.getElementById('novoValorAlvoObjetivo').value);
+      const guardado = sanitizeNumber(document.getElementById('novoValorGuardadoObjetivo').value);
+      const prazo = sanitize(document.getElementById('novoPrazoObjetivo').value.trim() || 'Sem prazo');
 
-    function confirmarAdicionarConta() {
-      db.config.contasBancarias.push({
-        id: Date.now(),
-        banco: document.getElementById('novoBancoConta').value,
-        tipo: document.getElementById('novoTipoConta').value,
-        saldo: sanitizeNumber(document.getElementById('novoSaldoConta').value)
-      });
+      if (!db.config.objetivos) db.config.objetivos = [];
+      db.config.objetivos.push({ id: Date.now(), nome, alvo, guardado, prazo });
       salvarTudo();
-      togglePainelAdicionar('conta', false);
-      renderizarContasBancarias();
-      exibirAvisoRapido("Conta adicionada!");
+      togglePainelAdicionar('objetivo', false);
+      renderizarObjetivos();
+      exibirAvisoRapido("Objetivo adicionado com sucesso!");
     }
 
-    function confirmarAdicionarArea(tipo) {
-      const input = document.getElementById(tipo === 'saidas' ? 'novoNomeSaida' : 'novoNomeEntrada');
-      const nome = input ? input.value.trim() : '';
-      if (nome) {
-        db.config[tipo].push(sanitize(nome));
+    function atualizarObjetivo(idx, campo, val) {
+      if (campo === 'alvo' || campo === 'guardado') {
+        db.config.objetivos[idx][campo] = sanitizeNumber(val);
+      } else {
+        db.config.objetivos[idx][campo] = sanitize(val);
+      }
+      salvarTudo();
+      renderizarObjetivos();
+    }
+
+    function removerObjetivo(idOuIndex) {
+      if (confirm("Deseja excluir este objetivo financeiro?")) {
+        const idx = db.config.objetivos.findIndex(o => o.id === idOuIndex);
+        if (idx !== -1) {
+          db.config.objetivos.splice(idx, 1);
+        } else {
+          db.config.objetivos.splice(idOuIndex, 1);
+        }
         salvarTudo();
-        if (input) input.value = '';
-        togglePainelAdicionar(tipo === 'saidas' ? 'saida' : 'entrada', false);
-        renderizarMenu();
-        exibirAvisoRapido("Categoria adicionada!");
+        renderizarObjetivos();
+        exibirAvisoRapido("Objetivo removido");
       }
     }
 
-    function confirmarAdicionarCartao() {
-      db.config.cartoes.push({
-        id: Date.now(),
-        nome: sanitize(document.getElementById('novoNomeCartao').value.trim() || 'Cartão'),
-        banco: document.getElementById('novoBancoCartao').value,
-        limite: sanitizeNumber(document.getElementById('novoLimiteCartao').value)
-      });
-      salvarTudo();
-      togglePainelAdicionar('cartao', false);
-      renderizarMenu();
-      exibirAvisoRapido("Cartão adicionado!");
-    }
+    function renderizarObjetivos() {
+      const container = document.getElementById('listaObjetivosMenu');
+      if (!container) return;
+      if (!db.config.objetivos) db.config.objetivos = [];
 
-    function selecionarAba(nome) {
-      abaAtiva = nome;
-      document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
-        b.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400');
-      });
-      document.getElementById(`tab-${nome}`)?.classList.add('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+      container.innerHTML = db.config.objetivos.map((obj, idx) => {
+        const alvo = sanitizeNumber(obj.alvo);
+        const guardado = sanitizeNumber(obj.guardado);
+        const pct = alvo > 0 ? Math.min((guardado / alvo) * 100, 100) : 0;
+        return `
+          <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <input type="text" value="${sanitize(obj.nome)}" onchange="atualizarObjetivo(${idx}, 'nome', this.value)" class="bg-transparent font-bold text-slate-800 dark:text-slate-200 text-xs truncate w-full">
+              <button type="button" onclick="removerObjetivo(${obj.id !== undefined ? obj.id : idx})" class="text-slate-400 hover:text-rose-500 font-bold px-1.5 py-0.5 cursor-pointer">&times;</button>
+            </div>
+            
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-500 dark:text-slate-400">Prazo: <input type="text" value="${sanitize(obj.prazo || '')}" onchange="atualizarObjetivo(${idx}, 'prazo', this.value)" class="w-20 bg-transparent text-slate-700 dark:text-slate-300 font-medium inline-block"></span>
+              <span class="font-bold text-purple-600 dark:text-purple-400">${pct.toFixed(1)}%</span>
+            </div>
 
-      const viewMenu = document.getElementById('view-MENU');
-      const viewMes = document.getElementById('view-MES');
+            <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div class="bg-purple-600 h-2 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
 
-      if (nome === 'MENU') {
-        viewMenu?.classList.remove('hidden');
-        viewMes?.classList.add('hidden');
-        renderizarMenu();
-      } else {
-        viewMenu?.classList.add('hidden');
-        viewMes?.classList.remove('hidden');
-        renderizarMes();
-      }
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200 dark:border-slate-800 text-[11px]">
+              <div>
+                <span class="text-[9px] text-slate-400 block uppercase">Guardado:</span>
+                <input type="number" step="0.01" value="${guardado}" onchange="atualizarObjetivo(${idx}, 'guardado', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 font-semibold text-emerald-600 mono text-right">
+              </div>
+              <div>
+                <span class="text-[9px] text-slate-400 block uppercase">Alvo:</span>
+                <input type="number" step="0.01" value="${alvo}" onchange="atualizarObjetivo(${idx}, 'alvo', this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 font-semibold text-slate-700 dark:text-slate-300 mono text-right">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderizarMenu() {
       renderizarContasBancarias();
+      renderizarObjetivos();
 
       document.getElementById('listaSaidasMenu').innerHTML = db.config.saidas.map((area, idx) => `
         <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -1345,7 +1354,7 @@
       const centroX = 90, centroY = 80, raio = 65;
 
       dados.forEach(d => {
-        if (d.valor <= anguloAtual) return;
+        if (d.valor <= 0) return;
         const anguloSlice = (d.valor / total) * (2 * Math.PI);
         ctx.beginPath();
         ctx.moveTo(centroX, centroY);
@@ -1485,7 +1494,6 @@
 
       const gastosDiretos = mesData.gastos.reduce((a, g) => a + sanitizeNumber(g.valor), 0);
       
-      // Separar Rendas recebidas vs A receber (pendentes)
       const rendasConfirmadas = mesData.rendas.filter(r => !r.pendente).reduce((a, r) => a + sanitizeNumber(r.valor), 0);
       const rendasPendentes = mesData.rendas.filter(r => r.pendente).reduce((a, r) => a + sanitizeNumber(r.valor), 0);
 
@@ -1567,6 +1575,7 @@
 
       labels.forEach((lbl, idx) => {
         const val = data[idx];
+        if (val <= 0) return;
         const anguloSlice = (val / total) * (2 * Math.PI);
         const cor = cores[idx % cores.length];
 
@@ -1593,32 +1602,6 @@
         ctx.fillText(txt.length > 22 ? txt.slice(0, 20) + '...' : txt, 190, legY + 8);
         legY += 20;
       });
-    }
-
-    function processarSMSCompartilhadoOuURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const smsTexto = urlParams.get('sms') || urlParams.get('text') || window.location.hash.replace('#sms=', '');
-      if (smsTexto) {
-        try {
-          const dec = decodeURIComponent(smsTexto);
-          const matchValor = dec.match(/(?:R\$|\$|EUR|€)\s*([\d\.,]+)/i);
-          if (matchValor) {
-            const val = parseFloat(matchValor[1].replace(/\./g, '').replace(',', '.'));
-            const mesAtualKey = meses[new Date().getMonth()];
-            if (!db.anos[anoAtivo]) db.anos[anoAtivo] = gerarEstruturaAno();
-            db.anos[anoAtivo][mesAtualKey].gastos.push({
-              data: new Date().toLocaleDateString('pt-BR').slice(0, 5),
-              area: db.config.saidas[0],
-              beneficiario: 'SMS Bancário',
-              descricao: dec.slice(0, 45),
-              valor: val
-            });
-            salvarTudo();
-            exibirAvisoRapido(t('smsImportado'));
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } catch (e) {}
-      }
     }
 
     function exportarBackup() {
@@ -1669,20 +1652,33 @@
       exibirAvisoRapido(t('dadosSalvos'));
     }
 
-    // Registro do Service Worker para PWA Offline
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+    function selecionarAba(nome) {
+      abaAtiva = nome;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+        b.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400');
       });
+      document.getElementById(`tab-${nome}`)?.classList.add('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+
+      const viewMenu = document.getElementById('view-MENU');
+      const viewMes = document.getElementById('view-MES');
+
+      if (nome === 'MENU') {
+        viewMenu?.classList.remove('hidden');
+        viewMes?.classList.add('hidden');
+        renderizarMenu();
+      } else {
+        viewMenu?.classList.add('hidden');
+        viewMes?.classList.remove('hidden');
+        renderizarMes();
+      }
     }
 
     window.onload = function() {
       aplicarTema((db && db.config && db.config.tema) || 'system', false);
       inicializarIdioma();
       inicializarBotoesMeses();
-      verificarLicencaAtiva();
       carregarAnosFiscais();
-      processarSMSCompartilhadoOuURL();
       selecionarAba(abaAtiva);
     };
   </script>
